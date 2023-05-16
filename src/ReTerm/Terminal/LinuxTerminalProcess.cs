@@ -42,6 +42,9 @@ namespace Sandbox.Terminal
         [DllImport("libc.so.6")]
         private static extern int fcntl(int fd, int cmd, int arg);
 
+        [DllImport("libc.so.6")]
+        private static extern int setenv(string name, string value, int overwrite);
+
         const int F_SETFL = 4;
         const int O_NONBLOCK = 00004000;
         const int SIGINT = 2;
@@ -57,7 +60,7 @@ namespace Sandbox.Terminal
             if (pid == 0)
             {
                 // Child process
-                Environment.SetEnvironmentVariable("TERM", "vt100");
+                setenv("TERM", "vt100", 1);
 
                 if (execvp("/bin/bash", new string[] { "/bin/bash", null, "--login" }) == -1)
                 {
