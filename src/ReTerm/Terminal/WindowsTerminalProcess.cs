@@ -15,8 +15,6 @@ namespace Sandbox.Terminal
         private readonly Task ReadStdOut;
         private readonly Action Quit;
         private readonly CancellationTokenSource cts = new();
-        private bool disposedValue;
-        private Action<string> Debug;
 
         public WindowsTerminalProcess(VT100Converter converter, Action quit) {
 
@@ -91,7 +89,7 @@ namespace Sandbox.Terminal
 
                 converter.Process(buffer);
             }
-            Debug("[!] The process has exited!\n");
+            Console.WriteLine("[!] The process has exited!\n");
             Quit();
         }
 
@@ -99,7 +97,7 @@ namespace Sandbox.Terminal
         {
             if (process.HasExited || process.StandardInput.BaseStream.CanWrite == false)
             {
-                Debug("[!] Error writing to base stream!\n");
+                Console.WriteLine("[!] Error writing to base stream!\n");
                 Quit();
             }
             else
