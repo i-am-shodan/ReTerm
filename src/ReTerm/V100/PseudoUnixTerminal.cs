@@ -164,7 +164,9 @@ namespace Common.ANSI.ANSIParser
 
         public void SetGraphicRendition(IAnsiDecoder _sender, GraphicRendition[] _commands, byte[] rawParameterData)
         {
-            Console.WriteLine("[!] NOTIMPLEMENTED - Set graphics");
+            // We don't support graphics!
+
+            //Console.WriteLine("[!] NOTIMPLEMENTED - Set graphics");
         }
 
         public string GetDeviceCode(IVT100Decoder _decoder, byte[] rawParameterData)
