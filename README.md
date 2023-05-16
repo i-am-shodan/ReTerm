@@ -15,7 +15,7 @@ ReTerm is a ALPHA quality/proof-of-concept landscape terminal for the Remarkable
 `dotnet build --no-self-contained -r linux-arm -c Release src/ReTerm/ReTerm.csproj`
 
 1. Rename `src\ReTerm\bin\Release\net6.0\linux-arm` to `ReTerm`
-1. Copy the newly renamed directory to your device `/home/ReTerm`
+1. Copy the newly renamed directory to your device `/home/root/ReTerm`
 1. Copy the files in `draft\` to `/opt/etc/draft`
 1. On your device run `chmod +x ReTerm/ReTerm.sh`
 1. Run ReTerm from your launcher
