@@ -27,6 +27,7 @@ namespace Sandbox
 
         static async Task Main(string[] args)
         {
+
             var screen = OutputDevices.Display;
             InputDevices.Keyboard.Released += Keyboard_Released;
 
@@ -80,10 +81,18 @@ namespace Sandbox
         {
             char key = '\0';
 
-            if (e.Key == KeyboardKey.LeftCtrl)
+            if (e.Key == KeyboardKey.LeftCtrl || 
+                e.Key == KeyboardKey.LeftShift || 
+                e.Key == KeyboardKey.RightShift ||
+                e.Key == KeyboardKey.LeftAlt ||
+                e.Key == KeyboardKey.RightAlt)
             {
                 return;
             }
+
+            bool isShiftHeld = InputDevices.Keyboard.KeyStates[KeyboardKey.LeftShift] == ReMarkable.NET.Unix.Driver.Generic.ButtonState.Pressed |
+                   InputDevices.Keyboard.KeyStates[KeyboardKey.RightShift] == ReMarkable.NET.Unix.Driver.Generic.ButtonState.Pressed;
+
 
             switch (e.Key)
             {
@@ -96,26 +105,32 @@ namespace Sandbox
                 case KeyboardKey.Space:
                     key = ' ';
                     break;
+                case KeyboardKey.Tab:
+                    key = '\t';
+                    break;
+                case KeyboardKey.CapsLock:
+                    key = '|';
+                    break;
                 case KeyboardKey.Grave:
-                    key = InputDevices.Keyboard.KeyStates[KeyboardKey.LeftShift] == ReMarkable.NET.Unix.Driver.Generic.ButtonState.Pressed ? '"' : '`';
+                    key = isShiftHeld ? '"' : '`';
                     break;
                 case KeyboardKey.Semicolon:
-                    key = InputDevices.Keyboard.KeyStates[KeyboardKey.LeftShift] == ReMarkable.NET.Unix.Driver.Generic.ButtonState.Pressed ? ':' : ';';
+                    key = isShiftHeld ? ':' : ';';
                     break;
                 case KeyboardKey.Apostrophe:
-                    key = InputDevices.Keyboard.KeyStates[KeyboardKey.LeftShift] == ReMarkable.NET.Unix.Driver.Generic.ButtonState.Pressed ? '@' : '\'';
+                    key = isShiftHeld ? '@' : '\'';
                     break;
                 case KeyboardKey.Comma:
-                    key = InputDevices.Keyboard.KeyStates[KeyboardKey.LeftShift] == ReMarkable.NET.Unix.Driver.Generic.ButtonState.Pressed ? '<' : ',';
+                    key = isShiftHeld ? '<' : ',';
                     break;
                 case KeyboardKey.Period:
-                    key = InputDevices.Keyboard.KeyStates[KeyboardKey.LeftShift] == ReMarkable.NET.Unix.Driver.Generic.ButtonState.Pressed ? '>' : '.';
+                    key = isShiftHeld ? '>' : '.';
                     break;
                 case KeyboardKey.Slash:
-                    key = InputDevices.Keyboard.KeyStates[KeyboardKey.LeftShift] == ReMarkable.NET.Unix.Driver.Generic.ButtonState.Pressed ? '?' : '/';
+                    key = isShiftHeld ? '?' : '/';
                     break;
                 case KeyboardKey.Equal:
-                    key = InputDevices.Keyboard.KeyStates[KeyboardKey.LeftShift] == ReMarkable.NET.Unix.Driver.Generic.ButtonState.Pressed ? '-' : '=';
+                    key = isShiftHeld ? '-' : '=';
                     break;
                 case KeyboardKey.NumberRow1:
                 case KeyboardKey.NumberRow2:
@@ -130,7 +145,7 @@ namespace Sandbox
                     var enumValue = e.Key.ToString();
                     key = enumValue[enumValue.Length - 1];
 
-                    if (InputDevices.Keyboard.KeyStates[KeyboardKey.LeftShift] == ReMarkable.NET.Unix.Driver.Generic.ButtonState.Pressed)
+                    if (isShiftHeld)
                     {
                         switch (key)
                         {
@@ -169,7 +184,7 @@ namespace Sandbox
                     break;
                 default:
                     var keyStr = e.Key.ToString();
-                    if (InputDevices.Keyboard.KeyStates[KeyboardKey.LeftShift] == ReMarkable.NET.Unix.Driver.Generic.ButtonState.Pressed)
+                    if (isShiftHeld)
                     {
                         keyStr = keyStr.ToUpperInvariant();
                     }
