@@ -3,7 +3,7 @@
 
 ReTerm is a ALPHA quality/proof-of-concept landscape terminal for the Remarkable 2 e-paper tablet that uses the type folio cover for input.
 
-
+![Terminal](https://github.com/i-am-shodan/ReTerm/blob/232bb1c104c7a5e5061b687bb4b5ad6d01aedc00/docs/screenshot.png)
 
 # Building and installing
 
