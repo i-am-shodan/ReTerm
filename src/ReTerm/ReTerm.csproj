@@ -28,7 +28,14 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <None Remove="ReTerm.sh" />
     <None Remove="Ubuntu Mono derivative Powerline.ttf" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="ReTerm.sh">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
   </ItemGroup>
 
   <ItemGroup>
