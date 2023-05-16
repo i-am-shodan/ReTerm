@@ -27,10 +27,4 @@ jobs:
     - name: Test
       run: dotnet test --no-build --verbosity normal
     - name: Zip artifact for deployment
-      run: zip release.zip ./src/ReTerm/bin/Release/net6.0/linux-arm/* -r    
-    - name: Release with Notes
-      uses: softprops/action-gh-release@v1
-      with:
-        files: release.zip
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      run: zip release.zip ./src/ReTerm/bin/Release/net6.0/linux-arm/* -r
