@@ -21,7 +21,7 @@ jobs:
       with:
         dotnet-version: 6.0.x
     - name: Restore dependencies
-      run: dotnet restore
+      run: dotnet restore -r linux-arm
     - name: Build
       run: dotnet build --no-restore --no-self-contained -r linux-arm -c Release src/ReTerm/ReTerm.csproj
     - name: Test
