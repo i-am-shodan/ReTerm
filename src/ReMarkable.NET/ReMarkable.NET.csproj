@@ -1,0 +1,58 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netstandard2.1</TargetFramework>
+    <RunPostBuildEvent>OnBuildSuccess</RunPostBuildEvent>
+    <Authors>parzivail</Authors>
+    <Company />
+    <Description>A .NET library for developing applications for the reMarkable tablets</Description>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <PackageProjectUrl>https://github.com/parzivail/ReMarkable.NET</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/parzivail/ReMarkable.NET</RepositoryUrl>
+    <PackageReleaseNotes>Initial release</PackageReleaseNotes>
+    <GeneratePackageOnBuild>false</GeneratePackageOnBuild>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <None Remove="Calibration\Builtin\lifebook.bin" />
+    <None Remove="Calibration\Builtin\marker.bin" />
+    <None Remove="Calibration\Builtin\x220.bin" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Include="Calibration\Builtin\lifebook.bin" />
+    <EmbeddedResource Include="Calibration\Builtin\marker.bin" />
+    <EmbeddedResource Include="Calibration\Builtin\x220.bin" />
+  </ItemGroup>
+
+	<ItemGroup>
+		<PackageReference Include="NLog" Version="4.7.2" />
+		<PackageReference Include="SixLabors.Fonts" Version="1.0.0-beta15" />
+		<PackageReference Include="SixLabors.ImageSharp" Version="1.0.3" />
+		<PackageReference Include="SixLabors.ImageSharp.Drawing" Version="1.0.0-beta0010" />
+	</ItemGroup>
+
+  <ItemGroup>
+    <Compile Update="Calibration\Builtin\StylusCalibrations.Designer.cs">
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+      <DependentUpon>StylusCalibrations.resx</DependentUpon>
+    </Compile>
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Update="Calibration\Builtin\StylusCalibrations.resx">
+      <Generator>ResXFileCodeGenerator</Generator>
+      <LastGenOutput>StylusCalibrations.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+  </ItemGroup>
+
+</Project>

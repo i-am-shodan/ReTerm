@@ -1,0 +1,66 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netstandard2.1</TargetFramework>
+    <RunPostBuildEvent>OnBuildSuccess</RunPostBuildEvent>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <None Remove="Resources\segoeui.ttf" />
+    <None Remove="Resources\segoeuib.ttf" />
+    <None Remove="Resources\segoeuil.ttf" />
+    <None Remove="Resources\segoeuisl.ttf" />
+    <None Remove="Resources\seguisb.ttf" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Include="Resources\segoeui.ttf" />
+    <EmbeddedResource Include="Resources\segoeuib.ttf" />
+    <EmbeddedResource Include="Resources\segoeuil.ttf" />
+    <EmbeddedResource Include="Resources\segoeuisl.ttf" />
+    <EmbeddedResource Include="Resources\seguisb.ttf" />
+  </ItemGroup>
+
+  <ItemGroup>
+	  <PackageReference Include="SixLabors.Fonts" Version="1.0.0-beta15" />
+	  <PackageReference Include="SixLabors.ImageSharp" Version="1.0.3" />
+	  <PackageReference Include="SixLabors.ImageSharp.Drawing" Version="1.0.0-beta0010" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\ReMarkable.NET\ReMarkable.NET.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Update="Symbols\EmbeddedSymbols.Designer.cs">
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+      <DependentUpon>EmbeddedSymbols.resx</DependentUpon>
+    </Compile>
+    <Compile Update="Typography\EmbeddedFonts.Designer.cs">
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+      <DependentUpon>EmbeddedFonts.resx</DependentUpon>
+    </Compile>
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Update="Symbols\EmbeddedSymbols.resx">
+      <Generator>ResXFileCodeGenerator</Generator>
+      <LastGenOutput>EmbeddedSymbols.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+    <EmbeddedResource Update="Typography\EmbeddedFonts.resx">
+      <Generator>ResXFileCodeGenerator</Generator>
+      <LastGenOutput>EmbeddedFonts.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+  </ItemGroup>
+
+</Project>
