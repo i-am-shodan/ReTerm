@@ -1,0 +1,6 @@
+﻿{
+  "configProperties": {
+    "System.Globalization.Invariant": true,
+    "System.Globalization.PredefinedCulturesOnly": false
+  }
+}

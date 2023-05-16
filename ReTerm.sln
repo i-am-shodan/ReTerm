@@ -1,0 +1,68 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.29905.134
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ReMarkable.NET", "src\ReMarkable.NET\ReMarkable.NET.csproj", "{4280D33C-7514-4DC9-82C7-DE2451ED716C}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ReTerm", "src\ReTerm\ReTerm.csproj", "{4D409FCF-6F7C-45C9-A4C0-2523398EF92B}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Graphite", "src\Graphite\Graphite.csproj", "{4AEB875B-3CB2-4989-9218-56DF4A4B02EC}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RmEmulator", "src\RmEmulator\RmEmulator.csproj", "{FEB7A874-4525-4C7D-AB7B-D3069511DB0F}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Framework", "Framework", "{68F3F164-DFA0-45D9-899C-540FA2B3AB4F}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Debug|ARM32 = Debug|ARM32
+		Release|Any CPU = Release|Any CPU
+		Release|ARM32 = Release|ARM32
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{4280D33C-7514-4DC9-82C7-DE2451ED716C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{4280D33C-7514-4DC9-82C7-DE2451ED716C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{4280D33C-7514-4DC9-82C7-DE2451ED716C}.Debug|ARM32.ActiveCfg = Debug|Any CPU
+		{4280D33C-7514-4DC9-82C7-DE2451ED716C}.Debug|ARM32.Build.0 = Debug|Any CPU
+		{4280D33C-7514-4DC9-82C7-DE2451ED716C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{4280D33C-7514-4DC9-82C7-DE2451ED716C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{4280D33C-7514-4DC9-82C7-DE2451ED716C}.Release|ARM32.ActiveCfg = Release|Any CPU
+		{4280D33C-7514-4DC9-82C7-DE2451ED716C}.Release|ARM32.Build.0 = Release|Any CPU
+		{4D409FCF-6F7C-45C9-A4C0-2523398EF92B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{4D409FCF-6F7C-45C9-A4C0-2523398EF92B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{4D409FCF-6F7C-45C9-A4C0-2523398EF92B}.Debug|ARM32.ActiveCfg = Debug|ARM32
+		{4D409FCF-6F7C-45C9-A4C0-2523398EF92B}.Debug|ARM32.Build.0 = Debug|ARM32
+		{4D409FCF-6F7C-45C9-A4C0-2523398EF92B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{4D409FCF-6F7C-45C9-A4C0-2523398EF92B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{4D409FCF-6F7C-45C9-A4C0-2523398EF92B}.Release|ARM32.ActiveCfg = Release|ARM32
+		{4D409FCF-6F7C-45C9-A4C0-2523398EF92B}.Release|ARM32.Build.0 = Release|ARM32
+		{4AEB875B-3CB2-4989-9218-56DF4A4B02EC}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{4AEB875B-3CB2-4989-9218-56DF4A4B02EC}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{4AEB875B-3CB2-4989-9218-56DF4A4B02EC}.Debug|ARM32.ActiveCfg = Debug|Any CPU
+		{4AEB875B-3CB2-4989-9218-56DF4A4B02EC}.Debug|ARM32.Build.0 = Debug|Any CPU
+		{4AEB875B-3CB2-4989-9218-56DF4A4B02EC}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{4AEB875B-3CB2-4989-9218-56DF4A4B02EC}.Release|Any CPU.Build.0 = Release|Any CPU
+		{4AEB875B-3CB2-4989-9218-56DF4A4B02EC}.Release|ARM32.ActiveCfg = Release|Any CPU
+		{4AEB875B-3CB2-4989-9218-56DF4A4B02EC}.Release|ARM32.Build.0 = Release|Any CPU
+		{FEB7A874-4525-4C7D-AB7B-D3069511DB0F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{FEB7A874-4525-4C7D-AB7B-D3069511DB0F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{FEB7A874-4525-4C7D-AB7B-D3069511DB0F}.Debug|ARM32.ActiveCfg = Debug|ARM32
+		{FEB7A874-4525-4C7D-AB7B-D3069511DB0F}.Debug|ARM32.Build.0 = Debug|ARM32
+		{FEB7A874-4525-4C7D-AB7B-D3069511DB0F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{FEB7A874-4525-4C7D-AB7B-D3069511DB0F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{FEB7A874-4525-4C7D-AB7B-D3069511DB0F}.Release|ARM32.ActiveCfg = Release|ARM32
+		{FEB7A874-4525-4C7D-AB7B-D3069511DB0F}.Release|ARM32.Build.0 = Release|ARM32
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{4280D33C-7514-4DC9-82C7-DE2451ED716C} = {68F3F164-DFA0-45D9-899C-540FA2B3AB4F}
+		{4AEB875B-3CB2-4989-9218-56DF4A4B02EC} = {68F3F164-DFA0-45D9-899C-540FA2B3AB4F}
+		{FEB7A874-4525-4C7D-AB7B-D3069511DB0F} = {68F3F164-DFA0-45D9-899C-540FA2B3AB4F}
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {A86BD27F-6670-4BC3-988B-1B2DBD5F5891}
+	EndGlobalSection
+EndGlobal
