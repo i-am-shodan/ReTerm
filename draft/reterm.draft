@@ -1,0 +1,8 @@
+# Copyright (c) 2020 The Toltec Contributors
+# SPDX-License-Identifier: MIT
+
+name=ReTerm
+desc=Landscape framebuffer terminal emulator
+imgFile=reterm
+call=/home/root/ReTerm/ReTerm.sh
+term=killall -9 dotnet
