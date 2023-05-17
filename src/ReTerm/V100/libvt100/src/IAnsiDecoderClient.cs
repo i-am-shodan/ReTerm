@@ -1,7 +1,7 @@
-﻿using System;
+using System;
 using System.Drawing;
 
-namespace libvt100
+namespace libVT100
 {
     public enum Direction
     {
@@ -63,8 +63,6 @@ namespace libvt100
         ForegroundNormalMagenta = 35,
         ForegroundNormalCyan = 36,
         ForegroundNormalWhite = 37,
-        /// Next arguments are 5;n or 2;r;g;b, see colors
-        ForegroundColor = 38,
         ForegroundNormalReset = 39,
         /// Set background color, normal intensity
         BackgroundNormalBlack = 40,
@@ -75,8 +73,6 @@ namespace libvt100
         BackgroundNormalMagenta = 45,
         BackgroundNormalCyan = 46,
         BackgroundNormalWhite = 47,
-        /// Next arguments are 5;n or 2;r;g;b, see colors
-        BackgroundColor = 48,
         BackgroundNormalReset = 49,
         /// Set foreground color, high intensity (aixtem)
         ForegroundBrightBlack = 90,
@@ -130,24 +126,21 @@ namespace libvt100
 
     public interface IAnsiDecoderClient : IDisposable
     {
-        void Characters(IAnsiDecoder _sender, char[] _chars, byte[] raw);
-        void SaveCursor(IAnsiDecoder _sernder, byte[] raw);
-        void RestoreCursor(IAnsiDecoder _sender, byte[] raw);
-        Size GetSize(IAnsiDecoder _sender, byte[] raw);
-        void MoveCursor(IAnsiDecoder _sender, Direction _direction, int _amount, byte[] raw);
-        void MoveCursorToBeginningOfLineBelow(IAnsiDecoder _sender, int _lineNumberRelativeToCurrentLine, byte[] raw);
-        void MoveCursorToBeginningOfLineAbove(IAnsiDecoder _sender, int _lineNumberRelativeToCurrentLine, byte[] raw);
-        void MoveCursorToColumn(IAnsiDecoder _sender, int _columnNumber, byte[] raw);
-        void MoveCursorTo(IAnsiDecoder _sender, Point _position, byte[] raw);
-        void ClearScreen(IAnsiDecoder _sender, ClearDirection _direction, byte[] raw);
-        void ClearLine(IAnsiDecoder _sender, ClearDirection _direction, byte[] raw);
-        void ScrollPageUpwards(IAnsiDecoder _sender, int _linesToScroll, byte[] raw);
-        void ScrollPageDownwards(IAnsiDecoder _sender, int _linesToScroll, byte[] raw);
-        Point GetCursorPosition(IAnsiDecoder _sender, byte[] raw);
-        void SetGraphicRendition(IAnsiDecoder _sender, GraphicRendition[] _commands, byte[] raw);
-        void ModeChanged(IAnsiDecoder _sender, AnsiMode _mode, byte[] raw);
-        void SetSize(IAnsiDecoder _sender, Size size, byte[] rawParamData);
-        //void Key(Keys key, byte[] raw);
-        void Error(byte[] raw);
+        void Characters(IAnsiDecoder _sender, char[] _chars);
+        void SaveCursor(IAnsiDecoder _sernder);
+        void RestoreCursor(IAnsiDecoder _sender);
+        Size GetSize(IAnsiDecoder _sender);
+        void MoveCursor(IAnsiDecoder _sender, Direction _direction, int _amount);
+        void MoveCursorToBeginningOfLineBelow(IAnsiDecoder _sender, int _lineNumberRelativeToCurrentLine);
+        void MoveCursorToBeginningOfLineAbove(IAnsiDecoder _sender, int _lineNumberRelativeToCurrentLine);
+        void MoveCursorToColumn(IAnsiDecoder _sender, int _columnNumber);
+        void MoveCursorTo(IAnsiDecoder _sender, Point _position);
+        void ClearScreen(IAnsiDecoder _sender, ClearDirection _direction);
+        void ClearLine(IAnsiDecoder _sender, ClearDirection _direction);
+        void ScrollPageUpwards(IAnsiDecoder _sender, int _linesToScroll);
+        void ScrollPageDownwards(IAnsiDecoder _sender, int _linesToScroll);
+        Point GetCursorPosition(IAnsiDecoder _sender);
+        void SetGraphicRendition(IAnsiDecoder _sender, GraphicRendition[] _commands);
+        void ModeChanged(IAnsiDecoder _sender, AnsiMode _mode);
     }
 }

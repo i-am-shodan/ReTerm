@@ -1,9 +1,9 @@
-﻿using System;
+using System;
 using System.Text;
 using System.Drawing;
 using System.Collections.Generic;
 
-namespace libvt100
+namespace libVT100
 {
     public class AnsiDecoder : EscapeCharacterDecoder, IAnsiDecoder
     {
@@ -49,73 +49,70 @@ namespace libvt100
             }
         }
 
-        protected override void ProcessCommand(byte _command, String _parameter, byte[] rawParameterData)
+        protected override void ProcessCommand(byte _command, String _parameter)
         {
             //System.Console.WriteLine ( "ProcessCommand: {0} {1}", (char) _command, _parameter );
             switch ((char)_command)
             {
                 case 'A':
-                    OnMoveCursor(Direction.Up, DecodeInt(_parameter, 1), rawParameterData);
+                    OnMoveCursor(Direction.Up, DecodeInt(_parameter, 1));
                     break;
 
                 case 'B':
-                    OnMoveCursor(Direction.Down, DecodeInt(_parameter, 1), rawParameterData);
+                    OnMoveCursor(Direction.Down, DecodeInt(_parameter, 1));
                     break;
 
                 case 'C':
-                    OnMoveCursor(Direction.Forward, DecodeInt(_parameter, 1), rawParameterData);
+                    OnMoveCursor(Direction.Forward, DecodeInt(_parameter, 1));
                     break;
 
                 case 'D':
-                    OnMoveCursor(Direction.Backward, DecodeInt(_parameter, 1), rawParameterData);
+                    OnMoveCursor(Direction.Backward, DecodeInt(_parameter, 1));
                     break;
 
                 case 'E':
-                    OnMoveCursorToBeginningOfLineBelow(DecodeInt(_parameter, 1), rawParameterData);
+                    OnMoveCursorToBeginningOfLineBelow(DecodeInt(_parameter, 1));
                     break;
 
-                case 'F': // end
-                    OnMoveCursorToBeginningOfLineAbove(DecodeInt(_parameter, 1), rawParameterData);
-                    //OnKey(Keys.End, rawParameterData);
+                case 'F':
+                    OnMoveCursorToBeginningOfLineAbove(DecodeInt(_parameter, 1));
                     break;
 
                 case 'G':
-                    OnMoveCursorToColumn(DecodeInt(_parameter, 1) - 1, rawParameterData);
+                    OnMoveCursorToColumn(DecodeInt(_parameter, 1) - 1);
                     break;
 
-                case 'H': // home
-                    //OnKey(Keys.Home, rawParameterData);
-                    break;
+                case 'H':
                 case 'f':
                     {
                         int separator = _parameter.IndexOf(';');
                         if (separator == -1)
                         {
-                            OnMoveCursorTo(new Point(0, 0), rawParameterData);
+                            OnMoveCursorTo(new Point(0, 0));
                         }
                         else
                         {
                             String row = _parameter.Substring(0, separator);
                             String column = _parameter.Substring(separator + 1, _parameter.Length - separator - 1);
-                            OnMoveCursorTo(new Point(DecodeInt(column, 1) - 1, DecodeInt(row, 1) - 1), rawParameterData);
+                            OnMoveCursorTo(new Point(DecodeInt(column, 1) - 1, DecodeInt(row, 1) - 1));
                         }
                     }
                     break;
 
                 case 'J':
-                    OnClearScreen((ClearDirection)DecodeInt(_parameter, 0), rawParameterData);
+                    OnClearScreen((ClearDirection)DecodeInt(_parameter, 0));
                     break;
 
                 case 'K':
-                    OnClearLine((ClearDirection)DecodeInt(_parameter, 0), rawParameterData);
+                    OnClearLine((ClearDirection)DecodeInt(_parameter, 0));
                     break;
 
                 case 'S':
-                    OnScrollPageUpwards(DecodeInt(_parameter, 1), rawParameterData);
+                    OnScrollPageUpwards(DecodeInt(_parameter, 1));
                     break;
 
                 case 'T':
-                    OnScrollPageDownwards(DecodeInt(_parameter, 1), rawParameterData);
+                    OnScrollPageDownwards(DecodeInt(_parameter, 1));
                     break;
 
                 case 'm':
@@ -127,14 +124,14 @@ namespace libvt100
                             renditionCommands[i] = (GraphicRendition)DecodeInt(commands[i], 0);
                             //System.Console.WriteLine ( "Rendition command: {0} = {1}", commands[i], renditionCommands[i]);
                         }
-                        OnSetGraphicRendition(renditionCommands, rawParameterData);
+                        OnSetGraphicRendition(renditionCommands);
                     }
                     break;
 
                 case 'n':
                     if (_parameter == "6")
                     {
-                        Point cursorPosition = OnGetCursorPosition(rawParameterData);
+                        Point cursorPosition = OnGetCursorPosition();
                         cursorPosition.X++;
                         cursorPosition.Y++;
                         String row = cursorPosition.Y.ToString();
@@ -155,18 +152,14 @@ namespace libvt100
                         output[i++] = (byte)'R';
                         OnOutput(output);
                     }
-                    else
-                    {
-                        throw new InvalidCommandException(_command, _parameter);
-                    }
                     break;
 
                 case 's':
-                    OnSaveCursor(rawParameterData);
+                    OnSaveCursor();
                     break;
 
                 case 'u':
-                    OnRestoreCursor(rawParameterData);
+                    OnRestoreCursor();
                     break;
 
                 case 'l':
@@ -174,57 +167,57 @@ namespace libvt100
                     {
                         case "20":
                             // Set line feed mode
-                            OnModeChanged(AnsiMode.LineFeed, rawParameterData);
+                            OnModeChanged(AnsiMode.LineFeed);
                             break;
 
                         case "?1":
                             // Set cursor key to cursor  DECCKM 
-                            OnModeChanged(AnsiMode.CursorKeyToCursor, rawParameterData);
+                            OnModeChanged(AnsiMode.CursorKeyToCursor);
                             break;
 
                         case "?2":
                             // Set ANSI (versus VT52)  DECANM
-                            OnModeChanged(AnsiMode.VT52, rawParameterData);
+                            OnModeChanged(AnsiMode.VT52);
                             break;
 
                         case "?3":
                             // Set number of columns to 80  DECCOLM 
-                            OnModeChanged(AnsiMode.Columns80, rawParameterData);
+                            OnModeChanged(AnsiMode.Columns80);
                             break;
 
                         case "?4":
                             // Set jump scrolling  DECSCLM 
-                            OnModeChanged(AnsiMode.JumpScrolling, rawParameterData);
+                            OnModeChanged(AnsiMode.JumpScrolling);
                             break;
 
                         case "?5":
                             // Set normal video on screen  DECSCNM 
-                            OnModeChanged(AnsiMode.NormalVideo, rawParameterData);
+                            OnModeChanged(AnsiMode.NormalVideo);
                             break;
 
                         case "?6":
                             // Set origin to absolute  DECOM 
-                            OnModeChanged(AnsiMode.OriginIsAbsolute, rawParameterData);
+                            OnModeChanged(AnsiMode.OriginIsAbsolute);
                             break;
 
                         case "?7":
                             // Reset auto-wrap mode  DECAWM 
                             // Disable line wrap
-                            OnModeChanged(AnsiMode.DisableLineWrap, rawParameterData);
+                            OnModeChanged(AnsiMode.DisableLineWrap);
                             break;
 
                         case "?8":
                             // Reset auto-repeat mode  DECARM 
-                            OnModeChanged(AnsiMode.DisableAutoRepeat, rawParameterData);
+                            OnModeChanged(AnsiMode.DisableAutoRepeat);
                             break;
 
                         case "?9":
                             // Reset interlacing mode  DECINLM 
-                            OnModeChanged(AnsiMode.DisableInterlacing, rawParameterData);
+                            OnModeChanged(AnsiMode.DisableInterlacing);
                             break;
 
                         case "?25":
-                            OnModeChanged(AnsiMode.HideCursor, rawParameterData);
+                            OnModeChanged(AnsiMode.HideCursor);
                             break;
 
                         default:
@@ -237,57 +230,57 @@ namespace libvt100
                     {
                         case "":
                             //Set ANSI (versus VT52)  DECANM
-                            OnModeChanged(AnsiMode.ANSI, rawParameterData);
+                            OnModeChanged(AnsiMode.ANSI);
                             break;
 
                         case "20":
                             // Set new line mode
-                            OnModeChanged(AnsiMode.NewLine, rawParameterData);
+                            OnModeChanged(AnsiMode.NewLine);
                             break;
 
                         case "?1":
                             // Set cursor key to application  DECCKM
-                            OnModeChanged(AnsiMode.CursorKeyToApplication, rawParameterData);
+                            OnModeChanged(AnsiMode.CursorKeyToApplication);
                             break;
 
                         case "?3":
                             // Set number of columns to 132  DECCOLM
-                            OnModeChanged(AnsiMode.Columns132, rawParameterData);
+                            OnModeChanged(AnsiMode.Columns132);
                             break;
 
                         case "?4":
                             // Set smooth scrolling  DECSCLM
-                            OnModeChanged(AnsiMode.SmoothScrolling, rawParameterData);
+                            OnModeChanged(AnsiMode.SmoothScrolling);
                             break;
 
                         case "?5":
                             // Set reverse video on screen  DECSCNM
-                            OnModeChanged(AnsiMode.ReverseVideo, rawParameterData);
+                            OnModeChanged(AnsiMode.ReverseVideo);
                             break;
 
                         case "?6":
                             // Set origin to relative  DECOM
-                            OnModeChanged(AnsiMode.OriginIsRelative, rawParameterData);
+                            OnModeChanged(AnsiMode.OriginIsRelative);
                             break;
 
                         case "?7":
                             //  Set auto-wrap mode  DECAWM
                             // Enable line wrap
-                            OnModeChanged(AnsiMode.LineWrap, rawParameterData);
+                            OnModeChanged(AnsiMode.LineWrap);
                             break;
 
                         case "?8":
                             // Set auto-repeat mode  DECARM
-                            OnModeChanged(AnsiMode.AutoRepeat, rawParameterData);
+                            OnModeChanged(AnsiMode.AutoRepeat);
                             break;
 
                         case "?9":
                             /// Set interlacing mode 
-                            OnModeChanged(AnsiMode.Interlacing, rawParameterData);
+                            OnModeChanged(AnsiMode.Interlacing);
                             break;
 
                         case "?25":
-                            OnModeChanged(AnsiMode.ShowCursor, rawParameterData);
+                            OnModeChanged(AnsiMode.ShowCursor);
                             break;
 
                         default:
@@ -297,103 +290,13 @@ namespace libvt100
 
                 case '>':
                     // Set numeric keypad mode
-                    OnModeChanged(AnsiMode.NumericKeypad, rawParameterData);
+                    OnModeChanged(AnsiMode.NumericKeypad);
                     break;
 
                 case '=':
-                    OnModeChanged(AnsiMode.AlternateKeypad, rawParameterData);
+                    OnModeChanged(AnsiMode.AlternateKeypad);
                     // Set alternate keypad mode (rto: non-numeric, presumably)
                     break;
-
-                case (char)0x52:
-                    var p = _parameter.Split(';');
-                    var width = int.Parse(p[1]);
-                    var height = int.Parse(p[0]);
-                    OnSize(new Size(width, height), rawParameterData);
-                    break;
-
-                case (char)0x4f:
-                    switch (_parameter)
-                    {
-                        //case "A":
-                        //    OnKey(Keys.Up, rawParameterData);
-                        //    break;
-                        //case "B":
-                        //    OnKey(Keys.Down, rawParameterData);
-                        //    break;
-                        //case "C":
-                        //    OnKey(Keys.Right, rawParameterData);
-                        //    break;
-                        //case "D":
-                        //    OnKey(Keys.Left, rawParameterData);
-                        //    break;
-                        //case "P":
-                        //    OnKey(Keys.F1, rawParameterData);
-                        //    break;
-                        //case "Q":
-                        //    OnKey(Keys.F2, rawParameterData);
-                        //    break;
-                        //case "R":
-                        //    OnKey(Keys.F3, rawParameterData);
-                        //    break;
-                        //case "S":
-                        //    OnKey(Keys.F4, rawParameterData);
-                        //    break;
-                        //case "T":
-                        //    OnKey(Keys.F5, rawParameterData);
-                        //    break;
-                        //case "U":
-                        //    OnKey(Keys.F6, rawParameterData);
-                        //    break;
-                        //case "V":
-                        //    OnKey(Keys.F7, rawParameterData);
-                        //    break;
-                        default:
-                            throw new NotImplementedException("Invalid param" + _parameter);
-                    }
-
-                case (char)0x7e: // VT220, https://invisible-island.net/xterm/ctlseqs/ctlseqs.html
-                    switch (_parameter)
-                    {
-                        //case "1":
-                        //    OnKey(Keys.Home, rawParameterData);
-                        //    break;
-                        //case "2":
-                        //    OnKey(Keys.Insert, rawParameterData);
-                        //    break;
-                        //case "3":
-                        //    OnKey(Keys.Delete, rawParameterData);
-                        //    break;
-                        //case "4":
-                        //    OnKey(Keys.End, rawParameterData);
-                        //    break;
-                        //case "5":
-                        //    OnKey(Keys.PageUp, rawParameterData);
-                        //    break;
-                        //case "6":
-                        //    OnKey(Keys.PageDown, rawParameterData);
-                        //    break;
-                        //case "15":
-                        //    OnKey(Keys.F5, rawParameterData);
-                        //    break;
-                        //case "17":
-                        //    OnKey(Keys.F6, rawParameterData);
-                        //    break;
-                        //case "18":
-                        //    OnKey(Keys.F7, rawParameterData);
-                        //    break;
-                        //case "19":
-                        //    OnKey(Keys.F8, rawParameterData);
-                        //    break;
-                        //case "20":
-                        //    OnKey(Keys.F9, rawParameterData);
-                        //    break;
-                        //case "21":
-                        //    OnKey(Keys.F10, rawParameterData);
-                        //    break;
-                        default:
-                            throw new NotImplementedException("Invalid param" + _parameter);
-                    }
 
                 default:
                     throw new InvalidCommandException(_command, _parameter);
@@ -402,65 +305,63 @@ namespace libvt100
 
         protected override bool IsValidOneCharacterCommand(char _command)
         {
-            // Esc=	Set alternate keypad mode	DECKPAM
-            // Esc>    Set numeric keypad mode DECKPNM
             return _command == '=' || _command == '>';
         }
 
-        protected virtual void OnSetGraphicRendition(GraphicRendition[] _commands, byte[] raw)
+        protected virtual void OnSetGraphicRendition(GraphicRendition[] _commands)
         {
             foreach (IAnsiDecoderClient client in m_listeners)
             {
-                client.SetGraphicRendition(this, _commands, raw);
+                client.SetGraphicRendition(this, _commands);
             }
         }
 
-        protected virtual void OnScrollPageUpwards(int _linesToScroll, byte[] raw)
+        protected virtual void OnScrollPageUpwards(int _linesToScroll)
         {
             foreach (IAnsiDecoderClient client in m_listeners)
             {
-                client.ScrollPageUpwards(this, _linesToScroll, raw);
+                client.ScrollPageUpwards(this, _linesToScroll);
             }
         }
 
-        protected virtual void OnScrollPageDownwards(int _linesToScroll, byte[] raw)
+        protected virtual void OnScrollPageDownwards(int _linesToScroll)
         {
             foreach (IAnsiDecoderClient client in m_listeners)
             {
-                client.ScrollPageDownwards(this, _linesToScroll, raw);
+                client.ScrollPageDownwards(this, _linesToScroll);
             }
         }
 
-        protected virtual void OnModeChanged(AnsiMode _mode, byte[] raw)
+        protected virtual void OnModeChanged(AnsiMode _mode)
         {
             foreach (IAnsiDecoderClient client in m_listeners)
             {
-                client.ModeChanged(this, _mode, raw);
+                client.ModeChanged(this, _mode);
             }
         }
 
-        protected virtual void OnSaveCursor(byte[] raw)
+        protected virtual void OnSaveCursor()
         {
             foreach (IAnsiDecoderClient client in m_listeners)
             {
-                client.SaveCursor(this, raw);
+                client.SaveCursor(this);
             }
         }
 
-        protected virtual void OnRestoreCursor(byte[] raw)
+        protected virtual void OnRestoreCursor()
         {
             foreach (IAnsiDecoderClient client in m_listeners)
             {
-                client.RestoreCursor(this, raw);
+                client.RestoreCursor(this);
             }
         }
 
-        protected virtual Point OnGetCursorPosition(byte[] raw)
+        protected virtual Point OnGetCursorPosition()
         {
             Point ret;
             foreach (IAnsiDecoderClient client in m_listeners)
             {
-                ret = client.GetCursorPosition(this, raw);
+                ret = client.GetCursorPosition(this);
                 if (!ret.IsEmpty)
                 {
                     return ret;
@@ -469,205 +370,69 @@ namespace libvt100
             return Point.Empty;
         }
 
-        protected virtual void OnClearScreen(ClearDirection _direction, byte[] raw)
+        protected virtual void OnClearScreen(ClearDirection _direction)
         {
             foreach (IAnsiDecoderClient client in m_listeners)
             {
-                client.ClearScreen(this, _direction, raw);
+                client.ClearScreen(this, _direction);
             }
         }
 
-        protected virtual void OnClearLine(ClearDirection _direction, byte[] raw)
+        protected virtual void OnClearLine(ClearDirection _direction)
         {
             foreach (IAnsiDecoderClient client in m_listeners)
             {
-                client.ClearLine(this, _direction, raw);
+                client.ClearLine(this, _direction);
             }
         }
 
-        protected virtual void OnMoveCursorTo(Point _position, byte[] raw)
+        protected virtual void OnMoveCursorTo(Point _position)
         {
             foreach (IAnsiDecoderClient client in m_listeners)
             {
-                client.MoveCursorTo(this, _position, raw);
+                client.MoveCursorTo(this, _position);
             }
         }
 
-        protected virtual void OnMoveCursorToColumn(int _columnNumber, byte[] raw)
+        protected virtual void OnMoveCursorToColumn(int _columnNumber)
         {
             foreach (IAnsiDecoderClient client in m_listeners)
             {
-                client.MoveCursorToColumn(this, _columnNumber, raw);
+                client.MoveCursorToColumn(this, _columnNumber);
             }
         }
 
-        protected virtual void OnMoveCursor(Direction _direction, int _amount, byte[] raw)
+        protected virtual void OnMoveCursor(Direction _direction, int _amount)
         {
             foreach (IAnsiDecoderClient client in m_listeners)
             {
-                client.MoveCursor(this, _direction, _amount, raw);
+                client.MoveCursor(this, _direction, _amount);
             }
         }
 
-        protected virtual void OnMoveCursorToBeginningOfLineBelow(int _lineNumberRelativeToCurrentLine, byte[] raw)
+        protected virtual void OnMoveCursorToBeginningOfLineBelow(int _lineNumberRelativeToCurrentLine)
         {
             foreach (IAnsiDecoderClient client in m_listeners)
             {
-                client.MoveCursorToBeginningOfLineBelow(this, _lineNumberRelativeToCurrentLine, raw);
+                client.MoveCursorToBeginningOfLineBelow(this, _lineNumberRelativeToCurrentLine);
             }
         }
 
-        protected virtual void OnMoveCursorToBeginningOfLineAbove(int _lineNumberRelativeToCurrentLine, byte[] raw)
+        protected virtual void OnMoveCursorToBeginningOfLineAbove(int _lineNumberRelativeToCurrentLine)
         {
             foreach (IAnsiDecoderClient client in m_listeners)
             {
-                client.MoveCursorToBeginningOfLineAbove(this, _lineNumberRelativeToCurrentLine, raw);
+                client.MoveCursorToBeginningOfLineAbove(this, _lineNumberRelativeToCurrentLine);
             }
         }
 
-        protected override void OnCharacters(char[] _characters, byte[] raw)
+        protected override void OnCharacters(char[] _characters)
         {
             foreach (IAnsiDecoderClient client in m_listeners)
             {
-                client.Characters(this, _characters, raw);
+                client.Characters(this, _characters);
             }
         }
-
-        protected override void OnSize(Size size, byte[] rawParamData)
-        {
-            foreach (IAnsiDecoderClient client in m_listeners)
-            {
-                client.SetSize(this, size, rawParamData);
-            }
-        }
-
-        //protected override void OnKey(Keys key, byte[] raw)
-        //{
-        //    foreach (IAnsiDecoderClient client in m_listeners)
-        //    {
-        //        client.Key(key, raw);
-        //    }
-        //}
-
-        protected override void OnUnknown(byte[] raw)
-        {
-            foreach (IAnsiDecoderClient client in m_listeners)
-            {
-                client.Error(raw);
-            }
-        }
-
-        private static string[] FUNCTIONKEY_MAP = { 
-        //      F1     F2     F3     F4     F5     F6     F7     F8     F9     F10    F11  F12
-            "11", "12", "13", "14", "15", "17", "18", "19", "20", "21", "23", "24",
-        //      F13    F14    F15    F16    F17  F18    F19    F20    F21    F22
-            "25", "26", "28", "29", "31", "32", "33", "34", "23", "24" };
-
-        //bool IDecoder.KeyPressed(Keys _modifiers, Keys _key)
-        //{
-        //    if ((int)Keys.F1 <= (int)_key && (int)_key <= (int)Keys.F12)
-        //    {
-        //        byte[] r = new byte[5];
-        //        r[0] = 0x1B;
-        //        r[1] = (byte)'[';
-        //        int n = (int)_key - (int)Keys.F1;
-        //        if ((_modifiers & Keys.Shift) != Keys.None)
-        //            n += 10;
-        //        char tail;
-        //        if (n >= 20)
-        //            tail = (_modifiers & Keys.Control) != Keys.None ? '@' : '$';
-        //        else
-        //            tail = (_modifiers & Keys.Control) != Keys.None ? '^' : '~';
-        //        string f = FUNCTIONKEY_MAP[n];
-        //        r[2] = (byte)f[0];
-        //        r[3] = (byte)f[1];
-        //        r[4] = (byte)tail;
-        //        OnOutput(r);
-        //        return true;
-        //    }
-        //    else if (_key == Keys.Left || _key == Keys.Right || _key == Keys.Up || _key == Keys.Down)
-        //    {
-        //        byte[] r = new byte[3];
-        //        r[0] = 0x1B;
-        //        //if ( _cursorKeyMode == TerminalMode.Normal )
-        //        r[1] = (byte)'[';
-        //        //else
-        //        //    r[1] = (byte) 'O';
-
-        //        switch (_key)
-        //        {
-        //            case Keys.Up:
-        //                r[2] = (byte)'A';
-        //                break;
-        //            case Keys.Down:
-        //                r[2] = (byte)'B';
-        //                break;
-        //            case Keys.Right:
-        //                r[2] = (byte)'C';
-        //                break;
-        //            case Keys.Left:
-        //                r[2] = (byte)'D';
-        //                break;
-        //            default:
-        //                throw new ArgumentException("unknown cursor key code", "key");
-        //        }
-        //        OnOutput(r);
-        //        return true;
-        //    }
-        //    else
-        //    {
-        //        byte[] r = new byte[4];
-        //        r[0] = 0x1B;
-        //        r[1] = (byte)'[';
-        //        r[3] = (byte)'~';
-        //        if (_key == Keys.Insert)
-        //        {
-        //            r[2] = (byte)'1';
-        //        }
-        //        else if (_key == Keys.Home)
-        //        {
-        //            r[2] = (byte)'2';
-        //        }
-        //        else if (_key == Keys.PageUp)
-        //        {
-        //            r[2] = (byte)'3';
-        //        }
-        //        else if (_key == Keys.Delete)
-        //        {
-        //            r[2] = (byte)'4';
-        //        }
-        //        else if (_key == Keys.End)
-        //        {
-        //            r[2] = (byte)'5';
-        //        }
-        //        else if (_key == Keys.PageDown)
-        //        {
-        //            r[2] = (byte)'6';
-        //        }
-        //        else if (_key == Keys.Enter)
-        //        {
-        //            //return new byte[] { 0x1B, (byte) 'M', (byte) '~' };
-        //            //r[1] = (byte) 'O';
-        //            //r[2] = (byte) 'M';
-        //            //return new byte[] { (byte) '\r', (byte) '\n' };
-        //            r = new byte[] { 13 };
-        //        }
-        //        else if (_key == Keys.Escape)
-        //        {
-        //            r = new byte[] { 0x1B };
-        //        }
-        //        else if (_key == Keys.Tab)
-        //        {
-        //            r = new byte[] { (byte)'\t' };
-        //        }
-        //        else
-        //        {
-        //            return false;
-        //        }
-        //        OnOutput(r);
-        //        return true;
-        //    }
-        //}
 
         void IAnsiDecoder.Subscribe(IAnsiDecoderClient _client)
         {

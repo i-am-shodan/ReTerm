@@ -1,8 +1,8 @@
-namespace libvt100
+namespace libVT100
 {
     public interface IAnsiDecoder : IDecoder
     {
-        void Subscribe ( IAnsiDecoderClient _client );
-        void UnSubscribe ( IAnsiDecoderClient _client );
+        void Subscribe(IAnsiDecoderClient _client);
+        void UnSubscribe(IAnsiDecoderClient _client);
     }
 }

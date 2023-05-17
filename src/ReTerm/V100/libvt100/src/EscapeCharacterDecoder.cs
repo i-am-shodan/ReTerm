@@ -1,36 +1,22 @@
-﻿// Part of https://github.com/rasmus-toftdahl-olesen/libvt100
-// The libvt100 library is licensed under the Apache License version 2.0:
-// http://www.apache.org/licenses/LICENSE-2.0
-
 using System;
 using System.Text;
 using System.Collections.Generic;
-using System.Drawing;
-using System.Linq;
-using NLog;
 
-namespace libvt100
+namespace libVT100
 {
     public abstract class EscapeCharacterDecoder : IDecoder
     {
-        private static readonly NLog.Logger MainLog = LogManager.GetCurrentClassLogger();
-
         public const byte EscapeCharacter = 0x1B;
         public const byte LeftBracketCharacter = 0x5B;
         public const byte XonCharacter = 17;
         public const byte XoffCharacter = 19;
 
-        /// <summary>
-        /// Used by Input() to determine whether the current run of input is part of
-        /// a command or is normal text.
-        /// </summary>
         protected enum State
         {
             Normal,
-            Command
+            Command,
         }
         protected State m_state;
-
         protected Encoding m_encoding;
         protected Decoder m_decoder;
         protected Encoder m_encoder;
@@ -61,7 +47,7 @@ namespace libvt100
             m_state = State.Normal;
             (this as IDecoder).Encoding = Encoding.ASCII;
             m_commandBuffer = new List<byte>();
-            m_supportXonXoff = false;
+            m_supportXonXoff = true;
             m_xOffReceived = false;
             m_outBuffer = new List<byte[]>();
         }
@@ -108,49 +94,30 @@ namespace libvt100
             return false;
         }
 
-        /// <summary>
-        /// Processs m_commandBuffer which is a List<byte> (of chars).
-        /// </summary>
-        /// 
         protected void ProcessCommandBuffer()
         {
-            // We keep getting called with more data added to m_commandBuffer
-            // We're either in the middle of processing command data (State.Command)
-            // or normal data (State.Normal). 
-            while (m_commandBuffer.Count > 0)
+            /*
+            System.Console.Write ( "ProcessCommandBuffer: " );
+            foreach ( byte b in m_commandBuffer )
             {
-                int escapeCodeLength = 1;
+                System.Console.Write ( "{0:X2} ", b );
+            }
+            System.Console.WriteLine ( "" );
+            */
 
-                // Move forward, processing normal input until we hit an EscapeChar
-                if (m_state == State.Normal && m_commandBuffer[0] != EscapeCharacter)
-                {
-                    ProcessNormalInput(m_commandBuffer[0]);
-                    m_commandBuffer.RemoveAt(0);
-                    continue;
-                }
+            m_state = State.Command;
 
-                // m_commandBuffer starts with a command and we're in State.Command mode
-                if (m_state == State.Normal && m_commandBuffer[0] == EscapeCharacter)
+            if (m_commandBuffer.Count > 1)
+            {
+                if (m_commandBuffer[0] != EscapeCharacter)
                 {
-                    m_state = State.Command;
+                    throw new Exception("Internal error, first command character _MUST_ be the escape character, please report this bug to the author.");
                 }
 
                 int start = 1;
-
-                // ======== Decode escape code
-                // Escape code types:
-                // - Single char: "\x001B=" or "\x001B>"
-                // - One byte:    "\x001B123m"
-                // - Two byte:    "\x001B[123m"
-                if (start >= m_commandBuffer.Count)
-                {
-                    // we need more data
-                    return;
-                }
-
+                // Is this a one or two byte escape code?
                 if (m_commandBuffer[start] == LeftBracketCharacter)
                 {
-                    escapeCodeLength = 2;
                     start++;
 
                     // It is a two byte escape code, but we still need more data
@@ -160,126 +127,77 @@ namespace libvt100
                     }
                 }
 
-                // "\x001B123m"
-                //        ^
-                //        start
-                // or
-                // "\x001B[123m"
-                //         ^
-                //        start
-                // Decode parameter, including quoted parts
-                // Handle quotes in the command, e.g.: "\x001B[\"This string is part of the command\"123b"
-                int end = start;
                 bool insideQuotes = false;
-
-                // "\x001B\"This string is part of the command\"123b"
-                //        ^
-                //        end
-                // or
-                // "\x001B[\"This string is part of the command\"123b"
-                //         ^
-                //         end
-                bool isShiftCharSet = m_commandBuffer[start] == 0x4f;
-                if (isShiftCharSet) // O aka Single Shift Select of G3 Character Set
+                int end = start;
+                while (end < m_commandBuffer.Count && (IsValidParameterCharacter((char)m_commandBuffer[end]) || insideQuotes))
                 {
+                    if (m_commandBuffer[end] == '"')
+                    {
+                        insideQuotes = !insideQuotes;
+                    }
                     end++;
-
-                    if (end >= m_commandBuffer.Count)
-                    {
-                        // not enough data
-                        return;
-                    }
-                }
-                else
-                {
-                    while (end < m_commandBuffer.Count && (IsValidParameterCharacter((char)m_commandBuffer[end]) || insideQuotes))
-                    {
-                        if (m_commandBuffer[end] == '"')
-                        {
-                            insideQuotes = !insideQuotes;
-                        }
-                        end++;
-                    }
                 }
 
-                if (insideQuotes)
-                {
-                    // need more data
-                    return;
-                }
-
-                // "\x001B[\"This string is part of the command\"123b"
-                //                                                  ^
-                //                                                  end
-                // Single char: Deal with the case where command is "\x001B=" or "\x001B>" 
-                // "\x001B="
-                //        ^
-                //    start
-                //      end^
                 if (m_commandBuffer.Count == 2 && IsValidOneCharacterCommand((char)m_commandBuffer[start]))
                 {
                     end = m_commandBuffer.Count - 1;
                 }
-
                 if (end == m_commandBuffer.Count)
                 {
-                    // More data needed for parameter
+                    // More data needed
                     return;
                 }
 
-                // `start` and `end` now bracket a suppopsedly valid sequence
-                // "\x001B[\"This string is part of the command\"123b"
-                //         ^
-                //         start
-                //                                                  ^
-                //                                                  end
                 Decoder decoder = (this as IDecoder).Encoding.GetDecoder();
-
-                // Copy parameter data (end-start chrars) to a temp buffer so we can call ProcessCommand
-
-                string parameter = string.Empty;
-                if (isShiftCharSet)
+                byte[] parameterData = new byte[end - start];
+                for (int i = 0; i < parameterData.Length; i++)
                 {
-                    parameter = ((char) m_commandBuffer[end]).ToString();
+                    parameterData[i] = m_commandBuffer[start + i];
                 }
-                else
-                {
-                    byte[] parameterData = new byte[end - start];
-                    for (int i = 0; i < parameterData.Length; i++)
-                    {
-                        parameterData[i] = m_commandBuffer[start + i];
-                    }
-                    int parameterLength = decoder.GetCharCount(parameterData, 0, parameterData.Length);
-                    char[] parameterChars = new char[parameterLength];
-                    decoder.GetChars(parameterData, 0, parameterData.Length, parameterChars, 0);
-                    parameter = new string(parameterChars);
-                }
+                int parameterLength = decoder.GetCharCount(parameterData, 0, parameterData.Length);
+                char[] parameterChars = new char[parameterLength];
+                decoder.GetChars(parameterData, 0, parameterData.Length, parameterChars, 0);
+                String parameter = new String(parameterChars);
 
-                byte command = isShiftCharSet ? m_commandBuffer[start] : m_commandBuffer[end];
-                byte[] rawData = m_commandBuffer.Skip(start - escapeCodeLength).Take(end - (start - escapeCodeLength) + 1).ToArray();
+                byte command = m_commandBuffer[end];
 
-                // Eat exceptions thrown by ProcessCommand
                 try
                 {
-                    ProcessCommand(command, parameter, rawData);
-                }
-                catch (Exception ex)
-                {
-                    MainLog.Warn(ex);
-                    OnUnknown(rawData);
+                    ProcessCommand(command, parameter);
                 }
                 finally
                 {
-                    // We're done procesing the command. 
-                    m_state = State.Normal;
+                    //System.Console.WriteLine ( "Remove the processed commands" );
+
+                    // Remove the processed commands
                     if (m_commandBuffer.Count == end - 1)
                     {
                         // All command bytes processed, we can go back to normal handling
                         m_commandBuffer.Clear();
+                        m_state = State.Normal;
                     }
                     else
                     {
-                        m_commandBuffer.RemoveRange(0, end + 1);
+                        bool returnToNormalState = true;
+                        for (int i = end + 1; i < m_commandBuffer.Count; i++)
+                        {
+                            if (m_commandBuffer[i] == EscapeCharacter)
+                            {
+                                m_commandBuffer.RemoveRange(0, i);
+                                ProcessCommandBuffer();
+                                returnToNormalState = false;
+                            }
+                            else
+                            {
+                                ProcessNormalInput(m_commandBuffer[i]);
+                            }
+                        }
+                        if (returnToNormalState)
+                        {
+                            m_commandBuffer.Clear();
+
+                            m_state = State.Normal;
+                        }
                     }
                 }
             }
@@ -307,7 +225,7 @@ namespace libvt100
 
             if (charCount > 0)
             {
-                OnCharacters(characters, data);
+                OnCharacters(characters);
             }
             else
             {
@@ -316,12 +234,17 @@ namespace libvt100
 
         }
 
-        /// <summary>
-        /// Processes one or more bytes of input data, looking for ANSI Escape Commands.
-        /// </summary>
-        /// <param name="_data"></param>
-        byte[] IDecoder.Input(byte[] _data)
+        void IDecoder.Input(byte[] _data)
         {
+            /*
+            System.Console.Write ( "Input[{0}]: ", m_state );
+            foreach ( byte b in _data )
+            {
+                System.Console.Write ( "{0:X2} ", b );
+            }
+            System.Console.WriteLine ( "" );
+            */
+
             if (_data.Length == 0)
             {
                 throw new ArgumentException("Input can not process an empty array.");
@@ -348,10 +271,40 @@ namespace libvt100
                     }
                 }
             }
-            AddToCommandBuffer(_data);
-            ProcessCommandBuffer();
 
-            return m_commandBuffer.ToArray();
+            switch (m_state)
+            {
+                case State.Normal:
+                    if (_data[0] == EscapeCharacter)
+                    {
+                        AddToCommandBuffer(_data);
+                        ProcessCommandBuffer();
+                    }
+                    else
+                    {
+                        int i = 0;
+                        while (i < _data.Length && _data[i] != EscapeCharacter)
+                        {
+                            ProcessNormalInput(_data[i]);
+                            i++;
+                        }
+                        if (i != _data.Length)
+                        {
+                            while (i < _data.Length)
+                            {
+                                AddToCommandBuffer(_data[i]);
+                                i++;
+                            }
+                            ProcessCommandBuffer();
+                        }
+                    }
+                    break;
+
+                case State.Command:
+                    AddToCommandBuffer(_data);
+                    ProcessCommandBuffer();
+                    break;
+            }
         }
 
         void IDecoder.CharacterTyped(char _character)
@@ -359,11 +312,6 @@ namespace libvt100
             byte[] data = m_encoding.GetBytes(new char[] { _character });
             OnOutput(data);
         }
-
-        //bool IDecoder.KeyPressed(Keys _modifiers, Keys _key)
-        //{
-        //    return false;
-        //}
 
         void IDisposable.Dispose()
         {
@@ -373,11 +321,9 @@ namespace libvt100
             m_commandBuffer = null;
         }
 
-        abstract protected void OnUnknown(byte[] raw);
-        abstract protected void OnCharacters(char[] _characters, byte[] raw);
-        abstract protected void OnSize(Size size, byte[] raw);
-        //abstract protected void OnKey(Keys key, byte[] raw);
-        abstract protected void ProcessCommand(byte _command, String _parameter, byte[] rawParameterData);
+        abstract protected void OnCharacters(char[] _characters);
+        abstract protected void ProcessCommand(byte _command, String _parameter);
+
         virtual public event DecoderOutputDelegate Output;
         virtual protected void OnOutput(byte[] _output)
         {

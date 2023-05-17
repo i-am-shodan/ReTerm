@@ -1,5 +1,5 @@
 using Common.ANSI.ANSIParser;
-using libvt100;
+using libVT100;
 using Sandbox.Terminal;
 
 namespace UnitTests

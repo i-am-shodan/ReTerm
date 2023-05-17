@@ -1,11 +1,11 @@
 using System;
 using System.Text;
 
-namespace libvt100
+namespace libVT100
 {
-    public delegate void DecoderOutputDelegate ( IDecoder _decoder, byte[] _output );
+    public delegate void DecoderOutputDelegate(IDecoder _decoder, byte[] _output);
 
-    public interface IDecoder : IDisposable    
+    public interface IDecoder : IDisposable
     {
         Encoding Encoding { get; set; }
 
@@ -17,11 +17,11 @@ namespace libvt100
         /// best to survive any invalid data and should still be able
         /// to process data after an exception is thrown.
         /// </summary>
-        byte[] Input ( byte[] _data );
-        
+        void Input(byte[] _data);
+
         event DecoderOutputDelegate Output;
 
         //bool KeyPressed( Keys _modifiers, Keys _key );
-        void CharacterTyped( char _character );
+        void CharacterTyped(char _character);
     }
 }
