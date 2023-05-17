@@ -351,7 +351,6 @@ namespace libvt100
                         default:
                             throw new NotImplementedException("Invalid param" + _parameter);
                     }
-                    break;
 
                 case (char)0x7e: // VT220, https://invisible-island.net/xterm/ctlseqs/ctlseqs.html
                     switch (_parameter)
@@ -395,7 +394,6 @@ namespace libvt100
                         default:
                             throw new NotImplementedException("Invalid param" + _parameter);
                     }
-                    break;
 
                 default:
                     throw new InvalidCommandException(_command, _parameter);
