@@ -27,7 +27,9 @@ jobs:
     - name: Zip artifact for runtime deployment
       run: zip --junk-paths release-required-dotnet-runtime.zip ./src/ReTerm/bin/Release/net6.0/linux-arm/* -r   
     - name: Build monolithic version
-      run: dotnet publish -r linux-arm --self-contained true -p:PublishSingleFile=true -p:PublishedTrimmed=true -p:PublishReadyToRun=true -p:Configuration=Release -p:IncludeAllContentForSelfExtract=true -p:PublishReadyToRunShowWarnings=true src/ReTerm/ReTerm.csproj
+      run: dotnet publish -r linux-arm --self-contained true -p:PublishSingleFile=true -p:PublishedTrimmed=true -p:PublishReadyToRun=true -p:Configuration=Release -p:IncludeAllContentForSelfExtract=true -p:PublishReadyToRunShowWarnings=true src/ReTerm/ReTerm.csproj    
+    - name: Copy shell script to monolithic version output
+      run: cp src/ReTerm/ReTerm.sh ./src/ReTerm/bin/Release/net6.0/linux-arm/publish/
     - name: Zip artifact for monolithic deployment
       run: zip --junk-paths release-no-dotnet-runtime.zip ./src/ReTerm/bin/Release/net6.0/linux-arm/publish/* -r         
     - name: Create Release
