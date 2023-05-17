@@ -20,12 +20,16 @@ jobs:
         dotnet-version: 6.0.x
     - name: Restore dependencies
       run: dotnet restore -r linux-arm
-    - name: Build
+    - name: Build runtime required version
       run: dotnet build --no-restore --no-self-contained -r linux-arm -c Release src/ReTerm/ReTerm.csproj
     - name: Test
       run: dotnet test --no-build --verbosity normal
-    - name: Zip artifact for deployment
-      run: zip --junk-paths release.zip ./src/ReTerm/bin/Release/net6.0/linux-arm/* -r 
+    - name: Zip artifact for runtime deployment
+      run: zip --junk-paths release-required-dotnet-runtime.zip ./src/ReTerm/bin/Release/net6.0/linux-arm/* -r   
+    - name: Build monolithic version
+      run: dotnet publish -r linux-arm --self-contained true -p:PublishSingleFile=true -p:PublishedTrimmed=true -p:PublishReadyToRun=true -p:Configuration=Release -p:IncludeAllContentForSelfExtract=true -p:PublishReadyToRunShowWarnings=true src/ReTerm/ReTerm.csproj
+    - name: Zip artifact for monolithic deployment
+      run: zip --junk-paths release-no-dotnet-runtime.zip ./src/ReTerm/bin/Release/net6.0/linux-arm/publish/* -r         
     - name: Create Release
       id: create_release
       uses: actions/create-release@v1
@@ -44,6 +48,16 @@ jobs:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
         upload_url: ${{ steps.create_release.outputs.upload_url }} # This pulls from the CREATE RELEASE step above, referencing it's ID to get its outputs object, which include a `upload_url`. See this blog post for more info: https://jasonet.co/posts/new-features-of-github-actions/#passing-data-to-future-steps 
-        asset_path: ./release.zip
-        asset_name: release.zip
+        asset_path: ./release-requires-dotnet-runtime.zip
+        asset_name: release-requires-dotnet-runtime.zip
+        asset_content_type: application/zip
+    - name: Upload Release Asset
+      id: upload-release-asset-monolithic
+      uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ steps.create_release.outputs.upload_url }} # This pulls from the CREATE RELEASE step above, referencing it's ID to get its outputs object, which include a `upload_url`. See this blog post for more info: https://jasonet.co/posts/new-features-of-github-actions/#passing-data-to-future-steps 
+        asset_path: ./release-no-dotnet-runtime.zip
+        asset_name: release-no-dotnet-runtime.zip
         asset_content_type: application/zip
