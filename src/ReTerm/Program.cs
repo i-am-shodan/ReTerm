@@ -93,7 +93,6 @@ namespace Sandbox
             bool isShiftHeld = InputDevices.Keyboard.KeyStates[KeyboardKey.LeftShift] == ReMarkable.NET.Unix.Driver.Generic.ButtonState.Pressed |
                    InputDevices.Keyboard.KeyStates[KeyboardKey.RightShift] == ReMarkable.NET.Unix.Driver.Generic.ButtonState.Pressed;
 
-
             switch (e.Key)
             {
                 case KeyboardKey.Enter:
@@ -149,34 +148,34 @@ namespace Sandbox
                     {
                         switch (key)
                         {
-                            case '0':
+                            case '1':
                                 key = '!';
                                 break;
-                            case '1':
+                            case '2':
                                 key = '"';
                                 break;
-                            case '2':
+                            case '3':
                                 key = '£';
                                 break;
-                            case '3':
+                            case '4':
                                 key = '$';
                                 break;
-                            case '4':
+                            case '5':
                                 key = '%';
                                 break;
-                            case '5':
+                            case '6':
                                 key = '^';
                                 break;
-                            case '6':
+                            case '7':
                                 key = '&';
                                 break;
-                            case '7':
+                            case '8':
                                 key = '*';
                                 break;
-                            case '8':
+                            case '9':
                                 key = '(';
                                 break;
-                            case '9':
+                            case '0':
                                 key = ')';
                                 break;
                         }
@@ -213,7 +212,6 @@ namespace Sandbox
                     case KeyboardKey.X:
                         TerminalProcess.WriteToStdIn("\x18");
                         break;
-
                     case KeyboardKey.G:
                         TerminalProcess.WriteToStdIn("\x07");
                         break;

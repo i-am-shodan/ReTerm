@@ -46,6 +46,12 @@ namespace Sandbox.Terminal
         [DllImport("libc.so.6")]
         private static extern int setenv(string name, string value, int overwrite);
 
+        [DllImport("libc.so.6", SetLastError = true)]
+        private static extern int chdir(string path);
+
+        [DllImport("libc.so.6", SetLastError = true)]
+        private static extern IntPtr getenv(string name);
+
 #nullable disable
         const int F_SETFL = 4;
         const int O_NONBLOCK = 00004000;
@@ -63,6 +69,17 @@ namespace Sandbox.Terminal
             {
                 // Child process
                 setenv("TERM", "vt100", 1);
+
+                string home = Marshal.PtrToStringAnsi(getenv("HOME"));
+                if (string.IsNullOrWhiteSpace(home))
+                {
+                    Console.WriteLine("Could not get HOME location");
+                }
+                else
+                {
+                    Console.WriteLine("HOME = " + home);
+                    chdir(home);
+                }
 
                 if (execvp("/bin/bash", new string[] { "/bin/bash", null, "--login" }) == -1)
                 {
@@ -95,6 +112,9 @@ namespace Sandbox.Terminal
                         byte[] buffer = new byte[dataLen];
                         Buffer.BlockCopy(rawBuffer, 0, buffer, 0, buffer.Length);
 
+                        //PrintBytes(buffer);
+                        //Console.WriteLine();
+
                         converter.Process(buffer);
                     }
                     Quit();
@@ -105,6 +125,22 @@ namespace Sandbox.Terminal
                 // Error
                 throw new Exception("Error calling forkpty");
             }
+        }
+
+        public static void PrintBytes(byte[] byteArray)
+        {
+            var sb = new StringBuilder("new byte[] { ");
+            for (var i = 0; i < byteArray.Length; i++)
+            {
+                var b = byteArray[i];
+                sb.Append(b);
+                if (i < byteArray.Length - 1)
+                {
+                    sb.Append(", ");
+                }
+            }
+            sb.Append(" }");
+            Console.WriteLine(sb.ToString());
         }
 
         public void WriteToStdIn(string txt)

@@ -1,5 +1,8 @@
 ﻿using Common.ANSI.ANSIParser;
 using libvt100;
+using System.Runtime.CompilerServices;
+
+[assembly: InternalsVisibleTo("UnitTests")]
 
 namespace Sandbox.Terminal
 {

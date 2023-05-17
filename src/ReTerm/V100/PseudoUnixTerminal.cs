@@ -3,7 +3,9 @@ using Sandbox;
 using SixLabors.ImageSharp.PixelFormats;
 using System;
 using System.Drawing;
-using System.Xml.Linq;
+using System.Runtime.CompilerServices;
+
+[assembly: InternalsVisibleTo("UnitTests")]
 
 namespace Common.ANSI.ANSIParser
 {
@@ -106,17 +108,21 @@ namespace Common.ANSI.ANSIParser
         public void MoveCursor(IAnsiDecoder _sender, Direction _direction, int _amount, byte[] rawParameterData)
         {
             // We don't currently have a cursor!
-            Console.WriteLine("[!] NOTIMPLEMENTED - MoveCursor");
+            Console.WriteLine("[!] NOTIMPLEMENTED - MoveCursor: "+_amount);
         }
 
         public void MoveCursorTo(IAnsiDecoder _sender, Point _position, byte[] rawParameterData)
         {
+            Console.WriteLine("MoveCursorToBeginningOfLineAbove: " + _position.X + ", " + _position.Y);
+
             CurrentRow = _position.X;
             CurrentColumn = _position.Y;
         }
 
         public void MoveCursorToBeginningOfLineAbove(IAnsiDecoder _sender, int _lineNumberRelativeToCurrentLine, byte[] rawParameterData)
         {
+            Console.WriteLine("MoveCursorToBeginningOfLineAbove: "+ _lineNumberRelativeToCurrentLine);
+
             CurrentColumn = 1;
             CurrentRow = CurrentRow - _lineNumberRelativeToCurrentLine;
 
