@@ -28,3 +28,16 @@ jobs:
       run: dotnet test --no-build --verbosity normal
     - name: Zip artifact for deployment
       run: zip release.zip ./src/ReTerm/bin/Release/net6.0/linux-arm/* -r
+    - name: Create Release
+      uses: actions/create-release@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        tag_name: ${{ github.ref }}
+        release_name: Release ${{ github.ref }}
+        draft: false
+        prerelease: false
+        body: Latest build
+        asset_path: ./
+        asset_name: release.zip
+        asset_content_type: application/zip
