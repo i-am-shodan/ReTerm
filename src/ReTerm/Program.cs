@@ -72,9 +72,34 @@ namespace Sandbox
                 TerminalController.CursorState.ConfiguredColumns = terminalWidthInChars;
                 TerminalController.SetAutomaticNewLine(true);
                 TerminalController.SetVt52Mode(true);
+                TerminalController.EnableUrxvtMouseMode(true);
+                TerminalController.EnableSgrMouseMode(true);
 
                 await using (TerminalProcess = (DeviceType.GetDevice() == Device.Emulator) ? new WindowsTerminalProcess(() => cts.Cancel()) : new LinuxTerminalProcess(() => cts.Cancel()))
                 {
+                    Action<Point> HandleStylusFingerPosition = (point) =>
+                    {
+                        // We need to convert state.DevicePosition.x and state.DevicePosition.y to the which character
+                        // and row the stylus is over. We can then use that to set the cursor position.
+                        var x = (int)Math.Floor(point.X / (double)TerminalFont.GetHeight());
+                        var y = (int)Math.Floor(point.Y / (double)TerminalFont.GetWidth());
+
+                        bool isShiftHeld = InputDevices.Keyboard.KeyStates[KeyboardKey.LeftShift] == ReMarkable.NET.Unix.Driver.Generic.ButtonState.Pressed | InputDevices.Keyboard.KeyStates[KeyboardKey.RightShift] == ReMarkable.NET.Unix.Driver.Generic.ButtonState.Pressed;
+                        bool isCtrlHeld = InputDevices.Keyboard.KeyStates[KeyboardKey.LeftCtrl] == ReMarkable.NET.Unix.Driver.Generic.ButtonState.Pressed | InputDevices.Keyboard.KeyStates[KeyboardKey.RightCtrl] == ReMarkable.NET.Unix.Driver.Generic.ButtonState.Pressed;
+
+                        TerminalController.MouseMove(x, y, 3, isCtrlHeld, isShiftHeld);
+                    };
+
+                    InputDevices.Touchscreen.Moved += (sender, finger) =>
+                    {
+                        HandleStylusFingerPosition(finger.DevicePosition);
+                    };
+
+                    InputDevices.Digitizer.StylusUpdate += (sender, state) =>
+                    {
+                        HandleStylusFingerPosition(state.Position);
+                    };
+
                     TerminalController.OnScreenBufferChanged += () =>
                     {
                         TerminalWindow.Clear();
