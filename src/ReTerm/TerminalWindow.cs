@@ -59,6 +59,12 @@ namespace Sandbox
                     break;
                 }
 
+                bool currentCellIsEmpty = CurrentPage.Rows[row][col] == TerminalFont.Empty;
+                if (currentCellIsEmpty && (char.IsWhiteSpace(c)))
+                {
+                    continue;
+                }
+
                 CurrentPage.Rows[row][col] = TerminalFont.GetGlyph(c, fg, bg);
 
                 OutputDevices.Display.Draw(

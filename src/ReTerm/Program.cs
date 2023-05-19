@@ -106,11 +106,6 @@ namespace Sandbox
                     };
 
                     TerminalController.OnCharacterChanged += (row, col, attrib, c) => {
-                        if (c == '\0')
-                        {
-                            c = ' ';
-                        }
-
                         if (row == terminalHeightInChars)
                         {
                             TerminalController.SetAbsoluteRow(0);
@@ -121,6 +116,11 @@ namespace Sandbox
                         if (attrib.BackgroundColor != ETerminalColor.Black)
                         {
                             Console.WriteLine("Background is not black!");
+                        }
+
+                        if (c == '\0')
+                        {
+                            c = ' ';
                         }
 
                         TerminalWindow.ScreenUpdate(
