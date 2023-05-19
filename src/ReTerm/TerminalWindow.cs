@@ -59,15 +59,24 @@ namespace Sandbox
                     break;
                 }
 
+                // Don't perform update if cell wants to be empty and is empty
                 bool currentCellIsEmpty = CurrentPage.Rows[row][col] == TerminalFont.Empty;
-                if (currentCellIsEmpty && (char.IsWhiteSpace(c)))
+                if (currentCellIsEmpty && char.IsWhiteSpace(c))
                 {
                     continue;
                 }
 
-                CurrentPage.Rows[row][col] = TerminalFont.GetGlyph(c, fg, bg);
+                // Don't perform update if we are updating the same glyph
+                var glyphToUpdateTo = TerminalFont.GetGlyph(c, fg, bg);
+                if (glyphToUpdateTo == CurrentPage.Rows[row][col])
+                {
+                    continue;
+                }
+
+                CurrentPage.Rows[row][col] = glyphToUpdateTo;
 
                 OutputDevices.Display.Draw(
+                    glyphToUpdateTo,
                     CurrentPage.Rows[row][col],
                     CurrentPage.Rows[row][col].Bounds(),
                     LogicalPosToPoint(row, col), 
