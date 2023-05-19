@@ -125,7 +125,7 @@ namespace RmEmulator
             
             _logger.Info("Loading application assembly");
 
-            var assemblyFile = "Sandbox.dll";
+            var assemblyFile = "ReTerm.dll";
             var appAssy = Assembly.LoadFrom(assemblyFile);
 
             var appEntry = appAssy.EntryPoint;

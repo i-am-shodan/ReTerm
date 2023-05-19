@@ -1,0 +1,4 @@
+[submodule "src/VtNetCore"]
+	path = src/VtNetCore
+	url = https://github.com/i-am-shodan/VtNetCore
+	branch = master

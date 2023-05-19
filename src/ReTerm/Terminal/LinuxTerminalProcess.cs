@@ -3,7 +3,6 @@ using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
 using System.Threading;
-using System.Diagnostics;
 
 namespace Sandbox.Terminal
 {
@@ -56,9 +55,11 @@ namespace Sandbox.Terminal
         const int F_SETFL = 4;
         const int O_NONBLOCK = 00004000;
         const int SIGINT = 2;
+
+        public event Action<byte[]> OnNewData;
         #endregion
 
-        public LinuxTerminalProcess(VT100Converter converter, Action quit)
+        public LinuxTerminalProcess(Action quit)
         {
             Quit = quit;
 
@@ -112,10 +113,10 @@ namespace Sandbox.Terminal
                         byte[] buffer = new byte[dataLen];
                         Buffer.BlockCopy(rawBuffer, 0, buffer, 0, buffer.Length);
 
+                        OnNewData?.Invoke(buffer);
+
                         //PrintBytes(buffer);
                         //Console.WriteLine();
-
-                        converter.Process(buffer);
                     }
                     Quit();
                 }, cts.Token);

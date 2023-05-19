@@ -14,6 +14,9 @@ namespace Sandbox.Terminal
 {
     public class TerminalFont
     {
+        public static Rgb24 Black = new Rgb24(0, 0, 0);
+        public static Rgb24 White = new Rgb24(255, 255, 255);
+
         public static Font CurrentFont = GetFontAndInit(36);
         public static Image<Rgb24> Empty;
         private static int width = 0;
@@ -79,8 +82,8 @@ namespace Sandbox.Terminal
 
         private static Image<Rgb24> GetEmptyGlyph()
         {
-            var _icon = new Image<Rgb24>(GetWidth(), GetHeight(), new Rgb24(255, 255, 255));
-            _icon.Mutate(x => x.DrawText(" ", CurrentFont, new Rgb24(0, 0, 0), new PointF(0, 0)));
+            var _icon = new Image<Rgb24>(GetWidth(), GetHeight(), White);
+            _icon.Mutate(x => x.DrawText(" ", CurrentFont, Black, new PointF(0, 0)));
             return _icon;
         }
 
@@ -90,16 +93,13 @@ namespace Sandbox.Terminal
         {
             List<Task> tasks = new();
 
-            var black = new Rgb24(0, 0, 0);
-            var white = new Rgb24(255, 255, 255);
-
-            glyphLookup.TryAdd(black, new ConcurrentDictionary<char, Image<Rgb24>>());
-            glyphLookup.TryAdd(white, new ConcurrentDictionary<char, Image<Rgb24>>());
+            glyphLookup.TryAdd(Black, new ConcurrentDictionary<char, Image<Rgb24>>());
+            glyphLookup.TryAdd(White, new ConcurrentDictionary<char, Image<Rgb24>>());
 
             for (char c = ' '; c <= 'z'; ++c)
             {
-                tasks.Add(CreateGlyph(c, black, white));
-                tasks.Add(CreateGlyph(c, white, black));
+                tasks.Add(CreateGlyph(c, Black, White));
+                tasks.Add(CreateGlyph(c, White, Black));
             }
 
             await Task.WhenAll(tasks);

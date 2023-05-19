@@ -15,8 +15,9 @@ namespace Sandbox.Terminal
         private readonly Task ReadStdOut;
         private readonly Action Quit;
         private readonly CancellationTokenSource cts = new();
+        public event Action<byte[]> OnNewData;
 
-        public WindowsTerminalProcess(VT100Converter converter, Action quit) {
+        public WindowsTerminalProcess(Action quit) {
 
             this.Quit = quit;
 
@@ -24,16 +25,15 @@ namespace Sandbox.Terminal
             {
                 StartInfo = new ProcessStartInfo()
                 {
-                    FileName = "bash",
-                    Arguments = "-il",
-                    StandardErrorEncoding = System.Text.Encoding.UTF8,
-                    StandardInputEncoding = System.Text.Encoding.UTF8,
-                    StandardOutputEncoding = System.Text.Encoding.UTF8,
+                    FileName = "wsl.exe",
+                    Arguments = "-e /bin/bash --login",
+                    StandardErrorEncoding = Encoding.UTF8,
+                    StandardInputEncoding = Encoding.UTF8,
+                    StandardOutputEncoding = Encoding.UTF8,
                     UseShellExecute = false,
                     RedirectStandardOutput = true,
                     RedirectStandardInput = true,
-                    RedirectStandardError = true,
-                    WorkingDirectory = "/home/root"
+                    RedirectStandardError = true
                 }
             };
 
@@ -56,13 +56,13 @@ namespace Sandbox.Terminal
 
             process.Start();
 
-            ReadStdError = Task.Run(() => ProcessStream(converter, process.StandardError.BaseStream, cts.Token), cts.Token);
-            ReadStdOut = Task.Run(() => ProcessStream(converter, process.StandardOutput.BaseStream, cts.Token), cts.Token);
+            ReadStdError = Task.Run(() => ProcessStream(process.StandardError.BaseStream, cts.Token), cts.Token);
+            ReadStdOut = Task.Run(() => ProcessStream(process.StandardOutput.BaseStream, cts.Token), cts.Token);
         }
 
-        internal async Task ProcessStream(VT100Converter converter, Stream s, CancellationToken token = default)
+        internal async Task ProcessStream(Stream s, CancellationToken token = default)
         {
-            var tempBuf = new byte[1024];
+            var tempBuf = new byte[100];
 
             while (!process.HasExited && !token.IsCancellationRequested)
             {
@@ -70,7 +70,7 @@ namespace Sandbox.Terminal
 
                 if (dataLen == 0)
                 {
-                    return;
+                    continue;
                 }
 
                 byte[] buffer = new byte[dataLen];
@@ -87,7 +87,7 @@ namespace Sandbox.Terminal
                     }
                 }
 
-                converter.Process(buffer);
+                OnNewData?.Invoke(buffer);
             }
             Console.WriteLine("[!] The process has exited!\n");
             Quit();
@@ -104,7 +104,10 @@ namespace Sandbox.Terminal
             {
                 var buffer = Encoding.UTF8.GetBytes(txt);
 
+                OnNewData?.Invoke(buffer);
+
                 process.StandardInput.BaseStream.Write(buffer, 0, buffer.Length);
+                process.StandardInput.BaseStream.Flush();
             }
         }
 

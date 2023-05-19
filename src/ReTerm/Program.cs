@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Threading;
 using System.Threading.Tasks;
-using Common.ANSI.ANSIParser;
 using Graphite;
 using Graphite.Typography;
 using ReMarkable.NET.Unix.Driver;
@@ -14,6 +13,9 @@ using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.Drawing.Processing;
 using SixLabors.ImageSharp.PixelFormats;
 using SixLabors.ImageSharp.Processing;
+using VtNetCore.VirtualTerminal;
+using VtNetCore.VirtualTerminal.Enums;
+using VtNetCore.XTermParser;
 using PointF = SixLabors.ImageSharp.PointF;
 
 namespace Sandbox
@@ -21,13 +23,12 @@ namespace Sandbox
     class Program
     {
         private static ITerminalProcess TerminalProcess;
-        private static VT100Converter VT100Converter;
-        private static PseudoUnixTerminal PseudoTerminal;
         private static TerminalWindow TerminalWindow;
+        private static VirtualTerminalController TerminalController = new VirtualTerminalController();
+        private static DataConsumer VT100DataConsumer = new DataConsumer(TerminalController);
 
         static async Task Main(string[] args)
         {
-
             var screen = OutputDevices.Display;
             InputDevices.Keyboard.Released += Keyboard_Released;
 
@@ -66,15 +67,115 @@ namespace Sandbox
             using (var cts = new CancellationTokenSource())
             {
                 TerminalWindow = new TerminalWindow(terminalWidthInChars, terminalHeightInChars, () => cts.Cancel());
-                PseudoTerminal = new PseudoUnixTerminal(TerminalWindow);
-                VT100Converter = new(PseudoTerminal);
-                await using (TerminalProcess = (DeviceType.GetDevice() == Device.Emulator) ? new WindowsTerminalProcess(VT100Converter, () => cts.Cancel()) : new LinuxTerminalProcess(VT100Converter, () => cts.Cancel()))
+                TerminalController.MaximumHistoryLines = terminalHeightInChars;
+                TerminalController.ResizeView(terminalWidthInChars, terminalHeightInChars +1);
+                TerminalController.CursorState.ConfiguredColumns = terminalWidthInChars;
+                TerminalController.SetAutomaticNewLine(true);
+                TerminalController.SetVt52Mode(true);
+
+                await using (TerminalProcess = (DeviceType.GetDevice() == Device.Emulator) ? new WindowsTerminalProcess(() => cts.Cancel()) : new LinuxTerminalProcess(() => cts.Cancel()))
                 {
+                    TerminalController.OnScreenBufferChanged += () =>
+                    {
+                        TerminalWindow.Clear();
+                    };
+
+                    TerminalController.OnCharacterChanged += (row, col, attrib, c) => {
+                        if (c == '\0')
+                        {
+                            c = ' ';
+                        }
+
+                        if (row == terminalHeightInChars)
+                        {
+                            TerminalController.SetAbsoluteRow(0);
+                            TerminalWindow.AddPageAndSetAsCurrent();
+                            row = 0;
+                        }
+
+                        if (attrib.BackgroundColor != ETerminalColor.Black)
+                        {
+                            Console.WriteLine("Background is not black!");
+                        }
+
+                        TerminalWindow.ScreenUpdate(
+                            row, 
+                            col, 
+                            c.ToString(), 
+                            ConvertColor(attrib.ForegroundColor), ConvertColor(attrib.BackgroundColor));
+                    };
+
+                    TerminalProcess.OnNewData += (data) => {
+                        VT100DataConsumer.Push(data);
+                    };
+
+                    var blinkCursor = Task.Run(async () => { 
+                        while (!cts.IsCancellationRequested)
+                        {
+                            var cursor = TerminalController.CursorState;
+
+                            if (cursor.BlinkingCursor)
+                            {
+                                char cursorChar = '_';
+
+                                switch (cursor.CursorShape)
+                                {
+                                    case ECursorShape.Underline:
+                                        cursorChar = '_';
+                                        break;
+                                    case ECursorShape.Bar:
+                                        cursorChar = '|';
+                                        break;
+                                    case ECursorShape.Block:
+                                        cursorChar = '|';
+                                        break;
+                                    default:
+                                        throw new Exception("Unknown cursor");
+                                }
+
+                                TerminalWindow.ScreenUpdate(cursor.CurrentRow, cursor.CurrentColumn, cursorChar.ToString(), TerminalFont.Black, TerminalFont.White);
+                                await Task.Delay(500);
+                                TerminalWindow.ScreenUpdate(cursor.CurrentRow, cursor.CurrentColumn, " ", TerminalFont.Black, TerminalFont.White);
+                            }
+                            await Task.Delay(500, cts.Token);
+                        }
+                    }, cts.Token);
+
                     await buildCacheTask;
 
                     await Task.Delay(-1, cts.Token);
                 }
             }
+        }
+
+        private static Rgb24 ConvertColor(ETerminalColor color)
+        {
+            switch (color)
+            {
+                case ETerminalColor.Black: // swap to white
+                    return TerminalFont.White;
+                case ETerminalColor.White: // swap to black
+                    return TerminalFont.Black;
+                case ETerminalColor.Red:
+                    return new Rgb24(255, 0, 0);
+                case ETerminalColor.Green:
+                    return new Rgb24(0, 255, 0);
+                case ETerminalColor.Blue:
+                    return new Rgb24(0, 0, 255);
+                case ETerminalColor.Magenta:
+                    return new Rgb24(255, 0, 255);
+                case ETerminalColor.Yellow:
+                    return new Rgb24(255, 255, 0);
+                case ETerminalColor.Cyan:
+                    return new Rgb24(0, 255, 255);
+                default:
+                    throw new Exception("Unknown color");
+            }
+        }
+
+        private static void NewDataFromVirtualTerminal(object sender, SendDataEventArgs e)
+        {
+
         }
 
         private static void Keyboard_Released(object sender, KeyEventArgs e)
@@ -92,6 +193,8 @@ namespace Sandbox
 
             bool isShiftHeld = InputDevices.Keyboard.KeyStates[KeyboardKey.LeftShift] == ReMarkable.NET.Unix.Driver.Generic.ButtonState.Pressed |
                    InputDevices.Keyboard.KeyStates[KeyboardKey.RightShift] == ReMarkable.NET.Unix.Driver.Generic.ButtonState.Pressed;
+
+            bool isOptHeld = InputDevices.Keyboard.KeyStates[KeyboardKey.End] == ReMarkable.NET.Unix.Driver.Generic.ButtonState.Pressed;
 
             switch (e.Key)
             {
@@ -129,7 +232,7 @@ namespace Sandbox
                     key = isShiftHeld ? '?' : '/';
                     break;
                 case KeyboardKey.Equal:
-                    key = isShiftHeld ? '-' : '=';
+                    key = isShiftHeld ? '=' : isOptHeld ? '=' : '-';
                     break;
                 case KeyboardKey.NumberRow1:
                 case KeyboardKey.NumberRow2:
@@ -144,7 +247,11 @@ namespace Sandbox
                     var enumValue = e.Key.ToString();
                     key = enumValue[enumValue.Length - 1];
 
-                    if (isShiftHeld)
+                    if (isOptHeld && key == '3')
+                    {
+                        key = '#';
+                    }
+                    else if (isShiftHeld)
                     {
                         switch (key)
                         {

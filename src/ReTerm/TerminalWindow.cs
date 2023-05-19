@@ -45,19 +45,16 @@ namespace Sandbox
             Clear();
         }
 
-        public void ScreenUpdate(int anisRow, int ansiCol, string txt, Rgb24 fg, Rgb24 bg)
+        public void ScreenUpdate(int row, int col, string txt, Rgb24 fg, Rgb24 bg)
         {
-            var row = anisRow - 1;
-            var col = ansiCol - 1;
-
             foreach (var c in txt)
             {
-                if (row >= CurrentPage.Rows.Count)
+                if (row > CurrentPage.Rows.Count)
                 {
                     break;
                 }
 
-                if (col >= CurrentPage.Rows[row].Length)
+                if (col > CurrentPage.Rows[row].Length)
                 {
                     break;
                 }
@@ -71,7 +68,6 @@ namespace Sandbox
                     default, 
                     WaveformMode.Du, 
                     DisplayTemp.RemarkableDraw,
-                //    UpdateMode.Full);
                 UpdateMode.Partial);
             }
         }
@@ -94,10 +90,8 @@ namespace Sandbox
             }
         }
 
-        public void ClearLine(int anisRow, int count = -1)
+        public void ClearLine(int row, int count = -1)
         {
-            var row = anisRow - 1;
-
             var max = count == -1 ? CurrentPage.Rows[row].Length : count;
 
             for (int col = 0; col < max; col++)
