@@ -76,14 +76,13 @@ namespace Sandbox
                 CurrentPage.Rows[row][col] = glyphToUpdateTo;
 
                 OutputDevices.Display.Draw(
-                    glyphToUpdateTo,
                     CurrentPage.Rows[row][col],
                     CurrentPage.Rows[row][col].Bounds(),
                     LogicalPosToPoint(row, col), 
                     default, 
                     WaveformMode.Du, 
                     DisplayTemp.RemarkableDraw,
-                UpdateMode.Partial);
+                    UpdateMode.Partial);
             }
         }
 
