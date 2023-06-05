@@ -1,0 +1,41 @@
+{
+    // Use IntelliSense to learn about possible attributes.
+    // Hover to view descriptions of existing attributes.
+    // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": ".NET Core Launch (console)",
+            "type": "coreclr",
+            "request": "launch",
+            "preLaunchTask": "build",
+            "program": "${workspaceFolder}/src/RmEmulator/bin/Debug/net6.0/RmEmulator.dll",
+            "args": [],
+            "cwd": "${workspaceFolder}/src/RmEmulator/bin/Debug/net6.0",
+            "console": "internalConsole",
+            "stopAtEntry": false
+        },
+        {
+            "name": "Debug on Rm2 (remote)",
+            "type": "coreclr",
+            "request": "launch",
+            "preLaunchTask": "RM2BuildDeploy",
+            "program": "/opt/bin/rm2fb-client",
+            "args": [
+                "/home/root/dotnet/dotnet",
+                "/home/root/ReTerm/ReTerm.dll"
+            ],
+            "cwd": "/home/root/ReTerm",
+            "stopAtEntry": false,
+            "console": "internalConsole",
+            "pipeTransport": {
+                "pipeCwd": "${workspaceFolder}",
+                "pipeProgram": "ssh",
+                "pipeArgs": [
+                    "root@172.16.1.189"
+                ],
+                "debuggerPath": "/home/root/vsdbg/vsdbg.sh",
+            }
+        }
+    ]
+}

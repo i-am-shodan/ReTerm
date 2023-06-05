@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Collections.Concurrent;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Graphite;
@@ -30,11 +32,21 @@ namespace Sandbox
         static async Task Main(string[] args)
         {
             var screen = OutputDevices.Display;
-            InputDevices.Keyboard.Released += Keyboard_Released;
+            if (InputDevices.Keyboard != null)
+            {
+                InputDevices.Keyboard.Released += Keyboard_Released;
+            }
 
             var buildCacheTask = TerminalFont.BuildGlyphCache();
 
-            const string splashText = "ReTerm (alpha)";
+            string splashText = "ReTerm";
+
+            if (InputDevices.Keyboard == null)
+            {
+                splashText += " - no kdb detected";
+                Console.WriteLine("Error: no keyboard attached");
+            }
+
             var splashFont = Fonts.SegoeUi.CreateFont(72);
             var strSize = TextMeasurer.Measure(splashText, new RendererOptions(splashFont));
 
@@ -77,17 +89,32 @@ namespace Sandbox
 
                 await using (TerminalProcess = (DeviceType.GetDevice() == Device.Emulator) ? new WindowsTerminalProcess(() => cts.Cancel()) : new LinuxTerminalProcess(() => cts.Cancel()))
                 {
+                    ConcurrentDictionary<Tuple<DateTime, int, int>, byte> marks = new();
+
+                    int lastStylusXPos = 0;
+                    int lastStylusYPos = 0;
+
                     Action<Point> HandleStylusFingerPosition = (point) =>
                     {
                         // We need to convert state.DevicePosition.x and state.DevicePosition.y to the which character
                         // and row the stylus is over. We can then use that to set the cursor position.
-                        var x = (int)Math.Floor(point.X / (double)TerminalFont.GetHeight());
-                        var y = (int)Math.Floor(point.Y / (double)TerminalFont.GetWidth());
+                        int x = (screen.VisibleWidth - point.X) / TerminalFont.GetHeight();
+                        int y = point.Y / TerminalFont.GetWidth();
 
                         bool isShiftHeld = InputDevices.Keyboard.KeyStates[KeyboardKey.LeftShift] == ReMarkable.NET.Unix.Driver.Generic.ButtonState.Pressed | InputDevices.Keyboard.KeyStates[KeyboardKey.RightShift] == ReMarkable.NET.Unix.Driver.Generic.ButtonState.Pressed;
                         bool isCtrlHeld = InputDevices.Keyboard.KeyStates[KeyboardKey.LeftCtrl] == ReMarkable.NET.Unix.Driver.Generic.ButtonState.Pressed | InputDevices.Keyboard.KeyStates[KeyboardKey.RightCtrl] == ReMarkable.NET.Unix.Driver.Generic.ButtonState.Pressed;
 
-                        TerminalController.MouseMove(x, y, 3, isCtrlHeld, isShiftHeld);
+                        if (x > 0 && y > 0 && x < terminalHeightInChars && y < terminalWidthInChars)
+                        {
+                            if (lastStylusXPos != x || lastStylusYPos != y)
+                            {
+                                TerminalController.MouseMove(x, y, 3, isCtrlHeld, isShiftHeld);
+                                TerminalWindow.SetCursor(x, y, '*');
+                                marks.TryAdd(new Tuple<DateTime, int, int>(DateTime.Now, x, y), 0);
+                                lastStylusXPos = x;
+                                lastStylusYPos = y;
+                            }
+                        }
                     };
 
                     InputDevices.Touchscreen.Moved += (sender, finger) =>
@@ -97,7 +124,10 @@ namespace Sandbox
 
                     InputDevices.Digitizer.StylusUpdate += (sender, state) =>
                     {
-                        HandleStylusFingerPosition(state.Position);
+                        if (state.Pressure > 0)
+                        {
+                            HandleStylusFingerPosition(new Point((int)state.DevicePosition.X, (int)state.DevicePosition.Y));
+                        }
                     };
 
                     TerminalController.OnScreenBufferChanged += () =>
@@ -106,7 +136,7 @@ namespace Sandbox
                     };
 
                     TerminalController.OnCharacterChanged += (row, col, attrib, c) => {
-                        if (row == terminalHeightInChars)
+                        if (row == terminalHeightInChars && !TerminalController.InEraseState)
                         {
                             TerminalController.SetAbsoluteRow(0);
                             TerminalWindow.AddPageAndSetAsCurrent();
@@ -138,6 +168,14 @@ namespace Sandbox
                         while (!cts.IsCancellationRequested)
                         {
                             var cursor = TerminalController.CursorState;
+                            int currentRow = cursor.CurrentRow;
+                            int currentCol = cursor.CurrentColumn;
+
+                            foreach (var markToRemove in marks.Where(x => DateTime.Now.Subtract(x.Key.Item1).TotalSeconds > 10).ToArray())
+                            {
+                                TerminalWindow.UnsetCursor(markToRemove.Key.Item2, markToRemove.Key.Item3);
+                                marks.TryRemove(markToRemove);
+                            }
 
                             if (cursor.BlinkingCursor)
                             {
@@ -158,9 +196,9 @@ namespace Sandbox
                                         throw new Exception("Unknown cursor");
                                 }
 
-                                TerminalWindow.ScreenUpdate(cursor.CurrentRow, cursor.CurrentColumn, cursorChar.ToString(), TerminalFont.Black, TerminalFont.White);
+                                TerminalWindow.SetCursor(currentRow, currentCol, cursorChar);
                                 await Task.Delay(500);
-                                TerminalWindow.ScreenUpdate(cursor.CurrentRow, cursor.CurrentColumn, " ", TerminalFont.Black, TerminalFont.White);
+                                TerminalWindow.UnsetCursor(currentRow, currentCol);
                             }
                             await Task.Delay(500, cts.Token);
                         }
@@ -233,7 +271,8 @@ namespace Sandbox
                     key = ' ';
                     break;
                 case KeyboardKey.Tab:
-                    key = '\t';
+                    // shift + tab = escape
+                    key = isShiftHeld ? '\x1b' : '\t';
                     break;
                 case KeyboardKey.CapsLock:
                     key = '|';
@@ -254,10 +293,26 @@ namespace Sandbox
                     key = isShiftHeld ? '>' : '.';
                     break;
                 case KeyboardKey.Slash:
-                    key = isShiftHeld ? '?' : '/';
+                    key = isShiftHeld ? '?' : isOptHeld ? '\\' : '/';
                     break;
                 case KeyboardKey.Equal:
                     key = isShiftHeld ? '=' : isOptHeld ? '=' : '-';
+                    break;
+                case KeyboardKey.Down:
+                    key = '\0';
+                    TerminalProcess.WriteToStdIn("\x1B\x5B\x42");
+                    break;
+                case KeyboardKey.Up:
+                    key = '\0';
+                    TerminalProcess.WriteToStdIn("\x1B\x5B\x41");
+                    break;
+                case KeyboardKey.Left:
+                    key = '\0';
+                    TerminalProcess.WriteToStdIn("\x1B\x5B\x44");
+                    break;
+                case KeyboardKey.Right:
+                    key = '\0';
+                    TerminalProcess.WriteToStdIn("\x1B\x5B\x43");
                     break;
                 case KeyboardKey.NumberRow1:
                 case KeyboardKey.NumberRow2:
