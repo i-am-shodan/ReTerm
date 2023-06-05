@@ -1,15 +1,23 @@
 
 # ReTerm
 
-ReTerm is a ALPHA quality/proof-of-concept landscape terminal for the Remarkable 2 e-paper tablet that uses the type folio cover for input.
+ReTerm is a BETA quality/proof-of-concept landscape terminal for the Remarkable 2 e-paper tablet that uses the type folio cover for input.
 
 ![Terminal](https://github.com/i-am-shodan/ReTerm/blob/232bb1c104c7a5e5061b687bb4b5ad6d01aedc00/docs/screenshot.png)
 
-# Building and installing
+# Installing from GitHub
+1. Go to the releases page and download the latest release - choose release-no-dotnet-runtime.zip
+1. Unzip to /home/root/ReTerm on your RM2 device
+1. [Optional] From the repo install the Draft launcher shortcuts
+1. Run `chmod +x /home/root/ReTerm/ReTerm.sh` on your device
+1. Shut down xochitl if you haven't installed a launcher
+1. Run `/home/root/ReTerm/ReTerm.sh` to launch the terminal program
+
+# Building and installing from source
 
 1. Install the dotnet 6.0 runtime on your remarkable2 device
   * [Follow this guide but ensure you are using .NET6](https://www.hanselman.com/blog/how-to-install-net-core-on-your-remarkable-2-eink-tablet-with-remarkablenet)
-1. Check out this repo
+1. Check out this repo, ensure you pull the submodules!
 1. Ensure .NET SDK 6.0 is installed on your local machine
 
 `dotnet build --no-self-contained -r linux-arm -c Release src/ReTerm/ReTerm.csproj`
