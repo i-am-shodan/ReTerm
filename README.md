@@ -2,7 +2,7 @@
 
 ReTerm is a proof-of-concept landscape terminal for the Remarkable 2 e-paper tablet that uses the type folio cover for input. It is written in modern .NET6 using a forked version of Remarkable.NET. It can be installed as single monolithic executable to avoid the need to deploy the dotnet runtime to your device.
 
-![Terminal](https://github.com/i-am-shodan/ReTerm/blob/232bb1c104c7a5e5061b687bb4b5ad6d01aedc00/docs/screenshot.png)
+![Terminal](https://github.com/i-am-shodan/ReTerm/blob/09bb90c8c645deb955de10a4ed46057dd2120c1b/docs/banner.gif)
 
 ## Installation
 ### Installing from GitHub
