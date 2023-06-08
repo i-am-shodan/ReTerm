@@ -1,0 +1,47 @@
+name: Build toltec package
+
+on:
+  push:
+    branches:
+      - master
+    paths:
+      - '.github/workflows/toltec.yml'
+      - 'src/**'
+      - 'draft/**'
+      - '.gitmodules'
+      - 'ReTerm.sln'
+      - 'package'
+  pull_request:
+    paths:
+      - '.github/workflows/toltec.yml'
+      - 'src/**'
+      - 'draft/**'
+      - '.gitmodules'
+      - 'ReTerm.sln'
+      - 'package'
+jobs:
+  build:
+    name: Build and package
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          submodules: true
+      - name: Setup Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.10'
+      - name: Install toltecmk
+        run: pip install toltecmk requests==2.26.0
+      - name: Build package
+        run: |
+          mkdir -p build release
+          tar -czvf src.tar.gz src draft ReTerm.sln
+          toltecmk --verbose -w build -d dist
+          cp dist/rmall/*.ipk release
+        timeout-minutes: 15
+      - name: Save package
+        uses: actions/upload-artifact@v3
+        with:
+          name: package
+          path: release

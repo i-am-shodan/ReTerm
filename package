@@ -1,0 +1,32 @@
+pkgnames=(reterm)
+pkgdesc="Landscape terminal support for the Remarkable 2 + type cover"
+section="admin"
+pkgver="$(date +'%Y%m%d.%H%M')-1"
+timestamp="$(date -u +%Y-%m-%dT%H:%MZ)"
+maintainer="i-am-shodan <6901273+i-am-shodan@users.noreply.github.com>"
+url=https://github.com/i-am-shodan/ReTerm
+license=MIT
+source=(src.tar.gz)
+sha256sums=(SKIP)
+image=dotnet6:latest
+
+build() {
+    dotnet publish \
+        -r linux-arm \
+        --self-contained true \
+        -p:PublishSingleFile=true \
+        -p:PublishedTrimmed=true \
+        -p:PublishReadyToRun=true \
+        -p:Configuration=Release \
+        -p:IncludeAllContentForSelfExtract=true \
+        -p:PublishReadyToRunShowWarnings=true \
+        src/ReTerm/ReTerm.csproj
+}
+
+package() {
+    true
+}
+
+configure() {
+    true
+}
