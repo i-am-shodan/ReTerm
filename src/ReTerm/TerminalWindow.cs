@@ -20,12 +20,19 @@ namespace Sandbox
 
         public bool IsEmpty => Image == TerminalFont.Empty.ImageWithRotation;
 
+        public Rgb24 ForegroundColor = TerminalFont.Black;
+        public Rgb24 BackgroundColor = TerminalFont.White;
+
+        public bool IsDefaultFgAndBg => ForegroundColor == TerminalFont.White && BackgroundColor == TerminalFont.Black;
+
         private char? cursor = null;
 
-        public void Set(Glyph glyph)
+        public void Set(Glyph glyph, Rgb24 fg, Rgb24 bg)
         {
             Image = glyph.ImageWithRotation;
             BaseGlyph = glyph;
+            ForegroundColor = fg;
+            BackgroundColor = bg;
 
             if (HasCursorOverlay)
             {
@@ -78,6 +85,8 @@ namespace Sandbox
         {
             Image = TerminalFont.Empty.ImageWithRotation;
             BaseGlyph = TerminalFont.Empty;
+            ForegroundColor = TerminalFont.Black;
+            BackgroundColor = TerminalFont.White;
             DrawCursor();
         }
     }
@@ -134,8 +143,13 @@ namespace Sandbox
                     }
 
                     // Don't perform update if cell wants to be empty and is empty
-                    bool currentCellIsEmpty = CurrentPage.Rows[row][col].IsEmpty;
-                    if (currentCellIsEmpty && char.IsWhiteSpace(c))
+                    bool isEmptyAlready = 
+                        char.IsWhiteSpace(c) && 
+                        CurrentPage.Rows[row][col].IsEmpty && 
+                        CurrentPage.Rows[row][col].ForegroundColor == fg && 
+                        CurrentPage.Rows[row][col].BackgroundColor == bg;
+
+                    if (isEmptyAlready)
                     {
                         continue;
                     }
@@ -147,7 +161,7 @@ namespace Sandbox
                         continue;
                     }
 
-                    CurrentPage.Rows[row][col].Set(glyphToUpdateTo);
+                    CurrentPage.Rows[row][col].Set(glyphToUpdateTo, fg, bg);
 
                     OutputDevices.Display.Draw(
                         CurrentPage.Rows[row][col].Image,

@@ -69,7 +69,7 @@ namespace Sandbox.Terminal
             if (pid == 0)
             {
                 // Child process
-                setenv("TERM", "vt100", 1);
+                setenv("TERM", "xterm", 1);
 
                 string home = Marshal.PtrToStringAnsi(getenv("HOME"));
                 if (string.IsNullOrWhiteSpace(home))

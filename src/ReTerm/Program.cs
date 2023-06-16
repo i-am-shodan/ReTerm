@@ -79,13 +79,7 @@ namespace Sandbox
             using (var cts = new CancellationTokenSource())
             {
                 TerminalWindow = new TerminalWindow(terminalWidthInChars, terminalHeightInChars, () => cts.Cancel());
-                TerminalController.MaximumHistoryLines = terminalHeightInChars;
-                TerminalController.ResizeView(terminalWidthInChars, terminalHeightInChars +1);
-                TerminalController.CursorState.ConfiguredColumns = terminalWidthInChars;
-                TerminalController.SetAutomaticNewLine(true);
-                TerminalController.SetVt52Mode(true);
-                TerminalController.EnableUrxvtMouseMode(true);
-                TerminalController.EnableSgrMouseMode(true);
+                SetTerminalDefaults(terminalWidthInChars, terminalHeightInChars);
 
                 await using (TerminalProcess = (DeviceType.GetDevice() == Device.Emulator) ? new WindowsTerminalProcess(() => cts.Cancel()) : new LinuxTerminalProcess(() => cts.Cancel()))
                 {
@@ -130,22 +124,33 @@ namespace Sandbox
                         }
                     };
 
+                    bool alreadyResetting = false;
                     TerminalController.OnScreenBufferChanged += () =>
                     {
+                        // resetting the terminal will cause a screen buffer change, so we need to ignore that
+                        // We reset once the screen buffer has changed to ensure that the terminal is in a known state
+                        // otherwise it seems to get a bit confused.
+
+                        if (alreadyResetting) return;
+                        alreadyResetting = true;
+
                         TerminalWindow.Clear();
+
+                        if (TerminalController.IsActiveBufferNormal)
+                        {
+                            TerminalController.FullReset();
+                        }
+                        SetTerminalDefaults(terminalWidthInChars, terminalHeightInChars);
+
+                        alreadyResetting = false;
                     };
 
                     TerminalController.OnCharacterChanged += (row, col, attrib, c) => {
-                        if (row == terminalHeightInChars && !TerminalController.InEraseState)
+                        if (row >= terminalHeightInChars && !TerminalController.InEraseState)
                         {
                             TerminalController.SetAbsoluteRow(0);
                             TerminalWindow.AddPageAndSetAsCurrent();
                             row = 0;
-                        }
-
-                        if (attrib.BackgroundColor != ETerminalColor.Black)
-                        {
-                            Console.WriteLine("Background is not black!");
                         }
 
                         if (c == '\0')
@@ -156,7 +161,7 @@ namespace Sandbox
                         TerminalWindow.ScreenUpdate(
                             row, 
                             col, 
-                            c.ToString(), 
+                            c.ToString(),
                             ConvertColor(attrib.ForegroundColor), ConvertColor(attrib.BackgroundColor));
                     };
 
@@ -211,6 +216,19 @@ namespace Sandbox
             }
         }
 
+        private static void SetTerminalDefaults(int terminalWidthInChars, int terminalHeightInChars)
+        {
+            TerminalController.MaximumHistoryLines = terminalHeightInChars;
+            TerminalController.ResizeView(terminalWidthInChars, terminalHeightInChars + 1);
+            TerminalController.CursorState.ConfiguredColumns = terminalWidthInChars;
+            TerminalController.SetAutomaticNewLine(true);
+            TerminalController.SetVt52Mode(true);
+            TerminalController.EnableUrxvtMouseMode(true);
+            TerminalController.EnableSgrMouseMode(true);
+            TerminalController.SetRgbBackgroundColor(255, 255, 255);
+            TerminalController.SetRgbForegroundColor(0, 0, 0);
+        }
+
         private static Rgb24 ConvertColor(ETerminalColor color)
         {
             switch (color)
@@ -249,7 +267,8 @@ namespace Sandbox
                 e.Key == KeyboardKey.LeftShift || 
                 e.Key == KeyboardKey.RightShift ||
                 e.Key == KeyboardKey.LeftAlt ||
-                e.Key == KeyboardKey.RightAlt)
+                e.Key == KeyboardKey.RightAlt || 
+                e.Key == KeyboardKey.End) // opt
             {
                 return;
             }
@@ -330,6 +349,10 @@ namespace Sandbox
                     if (isOptHeld && key == '3')
                     {
                         key = '#';
+                    }
+                    else if (isOptHeld && key == '0')
+                    {
+                        key = '+';
                     }
                     else if (isShiftHeld)
                     {

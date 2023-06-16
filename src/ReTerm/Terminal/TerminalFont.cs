@@ -86,11 +86,6 @@ namespace Sandbox.Terminal
 
         public static Glyph GetGlyph(char c, Rgb24 fg, Rgb24 bg)
         {
-            if (char.IsWhiteSpace(c) && bg == Black && fg == White)
-            {
-                return Empty;
-            }
-
             if (glyphLookup.ContainsKey(fg) && glyphLookup[fg].ContainsKey(c))
             {
                 return glyphLookup[fg][c];
@@ -105,7 +100,6 @@ namespace Sandbox.Terminal
         private static Glyph GetEmptyGlyph()
         {
             var _icon = new Image<Rgb24>(GetWidth(), GetHeight(), White);
-            _icon.Mutate(x => x.DrawText(" ", CurrentFont, Black, new PointF(0, 0)));
 
             var baseImg = _icon.Clone();
 

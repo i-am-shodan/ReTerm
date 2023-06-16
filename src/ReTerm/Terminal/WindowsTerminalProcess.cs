@@ -39,7 +39,7 @@ namespace Sandbox.Terminal
 
             if (!process.StartInfo.EnvironmentVariables.ContainsKey("TERM"))
             {
-                process.StartInfo.EnvironmentVariables.Add("TERM", "xterm");
+                process.StartInfo.EnvironmentVariables.Add("TERM", "vt100");
             }
             if (!process.StartInfo.EnvironmentVariables.ContainsKey("HOME"))
             {

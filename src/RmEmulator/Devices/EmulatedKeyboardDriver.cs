@@ -29,6 +29,8 @@ namespace RmEmulator.Devices
             var code = obj.ScanCode;
             KeyboardKey key = (KeyboardKey)code;
 
+            KeyStates[key] = ButtonState.Released;
+
             Released?.Invoke(this, new KeyEventArgs(key));
         }
 
@@ -36,6 +38,8 @@ namespace RmEmulator.Devices
         {
             var code = obj.ScanCode;
             KeyboardKey key = (KeyboardKey)code;
+
+            KeyStates[key] = ButtonState.Pressed;
 
             Pressed?.Invoke(this, new KeyPressEventArgs(key, obj.IsRepeat));
         }
