@@ -10,6 +10,17 @@ source=(src.tar.gz)
 sha256sums=(SKIP)
 image=dotnet6:latest
 
+########################################
+# This functions come from install-lib:
+# https://raw.githubusercontent.com/toltec-dev/toltec/master/scripts/install-lib
+########################################
+is-active() {
+    systemctl --quiet is-active "$1" 2> /dev/null
+}
+########################################
+# End of install-lib methods
+########################################
+
 build() {
     dotnet publish \
         -r linux-arm \
@@ -24,9 +35,13 @@ build() {
 }
 
 package() {
-    true
+    install -D -m 755 -t "$pkgdir"/opt/bin "$srcdir"/src/ReTerm/bin/Release/net6.0/linux-arm/publish/ReTerm
+    install -D -m 644 -t "$pkgdir"/opt/etc/draft "$srcdir"/draft/reterm.draft
+    install -D -m 644 -t "$pkgdir"/opt/etc/draft "$srcdir"/draft/reterm.png
 }
 
 configure() {
-    true
+    if is-active "tarnish.service"; then
+        type update-desktop-database &> /dev/null && update-desktop-database
+    fi
 }
