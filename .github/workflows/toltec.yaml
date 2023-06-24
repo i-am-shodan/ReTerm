@@ -5,7 +5,7 @@ on:
     branches:
       - master
     paths:
-      - '.github/workflows/toltec.yml'
+      - '.github/workflows/toltec.yaml'
       - 'src/**'
       - 'draft/**'
       - '.gitmodules'
@@ -13,7 +13,7 @@ on:
       - 'package'
   pull_request:
     paths:
-      - '.github/workflows/toltec.yml'
+      - '.github/workflows/toltec.yaml'
       - 'src/**'
       - 'draft/**'
       - '.gitmodules'
