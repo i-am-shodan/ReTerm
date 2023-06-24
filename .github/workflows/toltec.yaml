@@ -35,6 +35,9 @@ jobs:
         run: pip install toltecmk requests==2.26.0
       - name: Build package
         run: |
+          if [ -d build ];then
+            rm -r build
+          fi
           mkdir -p build release
           tar -czvf src.tar.gz src draft ReTerm.sln
           toltecmk --verbose -w build -d dist
