@@ -54,8 +54,12 @@ namespace Sandbox.Terminal
         private static FontFamily GetFont()
         {
             var fonts = new FontCollection();
+            var basePath = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
+            if (string.IsNullOrEmpty(basePath)) {
+              basePath = AppDomain.CurrentDomain.BaseDirectory;
+            }
 
-            var filePath = Path.Join(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), "Ubuntu Mono derivative Powerline.ttf");
+            var filePath = Path.Join(basePath, "Ubuntu Mono derivative Powerline.ttf");
 
             using var ms = new MemoryStream(File.ReadAllBytes(filePath));
             fonts.Install(ms);
