@@ -3,12 +3,12 @@ using System.Collections.Concurrent;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using Graphite;
-using Graphite.Typography;
 using ReMarkable.NET.Unix.Driver;
 using ReMarkable.NET.Unix.Driver.Display.EinkController;
 using ReMarkable.NET.Unix.Driver.Keyboard;
 using ReMarkable.NET.Util;
+using ReTerm.Fonts;
+using ReTerm.Settings;
 using Sandbox.Terminal;
 using SixLabors.Fonts;
 using SixLabors.ImageSharp;
@@ -68,6 +68,8 @@ namespace Sandbox
                 OutputDevices.Display.Draw(blankScreen, blankScreen.Bounds(), Point.Empty, waveformMode: WaveformMode.Auto);
             }
 
+            var settings = TerminalSettings.Get();
+
             // calculate the width of the terminal in chars based on the size of the font
             var terminalWidthInChars = (int)Math.Floor(screen.VisibleHeight / (double)TerminalFont.GetWidth());
             // calculate the height of the terminal in chars based on the height of the font
@@ -81,6 +83,7 @@ namespace Sandbox
                 TerminalWindow = new TerminalWindow(terminalWidthInChars, terminalHeightInChars, () => cts.Cancel());
                 SetTerminalDefaults(terminalWidthInChars, terminalHeightInChars);
 
+                //await using (TerminalProcess = new ReplayTerminalProcess(() => cts.Cancel()))
                 await using (TerminalProcess = (DeviceType.GetDevice() == Device.Emulator) ? new WindowsTerminalProcess(() => cts.Cancel()) : new LinuxTerminalProcess(() => cts.Cancel()))
                 {
                     ConcurrentDictionary<Tuple<DateTime, int, int>, byte> marks = new();
@@ -90,6 +93,11 @@ namespace Sandbox
 
                     Action<Point> HandleStylusFingerPosition = (point) =>
                     {
+                        if (settings.DisableMouseAndTouch)
+                        {
+                            return;
+                        }
+
                         // We need to convert state.DevicePosition.x and state.DevicePosition.y to the which character
                         // and row the stylus is over. We can then use that to set the cursor position.
                         int x = (screen.VisibleWidth - point.X) / TerminalFont.GetHeight();
@@ -133,7 +141,7 @@ namespace Sandbox
 
                         if (alreadyResetting) return;
                         alreadyResetting = true;
-
+              
                         TerminalWindow.Clear();
 
                         if (TerminalController.IsActiveBufferNormal)
@@ -169,14 +177,16 @@ namespace Sandbox
                         VT100DataConsumer.Push(data);
                     };
 
-                    var blinkCursor = Task.Run(async () => { 
+                    // Turn on cursor blinking if configured
+                    var cursorAndMarksActivity = Task.Run(async () =>
+                    {
                         while (!cts.IsCancellationRequested)
                         {
                             var cursor = TerminalController.CursorState;
                             int currentRow = cursor.CurrentRow;
                             int currentCol = cursor.CurrentColumn;
 
-                            foreach (var markToRemove in marks.Where(x => DateTime.Now.Subtract(x.Key.Item1).TotalSeconds > 10).ToArray())
+                            foreach (var markToRemove in marks.Where(x => DateTime.Now.Subtract(x.Key.Item1) > settings.TouchMarksClearTime).ToArray())
                             {
                                 TerminalWindow.UnsetCursor(markToRemove.Key.Item2, markToRemove.Key.Item3);
                                 marks.TryRemove(markToRemove);
@@ -201,9 +211,13 @@ namespace Sandbox
                                         throw new Exception("Unknown cursor");
                                 }
 
-                                TerminalWindow.SetCursor(currentRow, currentCol, cursorChar);
-                                await Task.Delay(500);
-                                TerminalWindow.UnsetCursor(currentRow, currentCol);
+                                // if don't blink is set we update the cursor position once 250ms after an update has occured
+                                if (!settings.DontBlinkCursor)
+                                {
+                                    TerminalWindow.SetCursor(currentRow, currentCol, cursorChar);
+                                    await Task.Delay(settings.CursorBlinkInterval);
+                                    TerminalWindow.UnsetCursor(currentRow, currentCol);
+                                }
                             }
                             await Task.Delay(500, cts.Token);
                         }
@@ -233,10 +247,10 @@ namespace Sandbox
         {
             switch (color)
             {
-                case ETerminalColor.Black: // swap to white
-                    return TerminalFont.White;
-                case ETerminalColor.White: // swap to black
+                case ETerminalColor.Black:
                     return TerminalFont.Black;
+                case ETerminalColor.White:
+                    return TerminalFont.White;
                 case ETerminalColor.Red:
                     return new Rgb24(255, 0, 0);
                 case ETerminalColor.Green:
@@ -315,7 +329,7 @@ namespace Sandbox
                     key = isShiftHeld ? '?' : isOptHeld ? '\\' : '/';
                     break;
                 case KeyboardKey.Equal:
-                    key = isShiftHeld ? '=' : isOptHeld ? '=' : '-';
+                    key = isShiftHeld ? '_' : isOptHeld ? '=' : '-';
                     break;
                 case KeyboardKey.Down:
                     key = '\0';
@@ -455,14 +469,6 @@ namespace Sandbox
             {
                 TerminalProcess.WriteToStdIn(key.ToString());
             }
-        }
-
-        public static void WindowUpdate(object sender, WindowUpdateEventArgs e)
-        {
-            _ = Task.Run(() =>
-            {
-                OutputDevices.Display.Draw(e.Buffer, e.UpdatedArea, e.UpdatedArea.Location, displayTemp: DisplayTemp.RemarkableDraw);
-            });      
         }
     }
 }

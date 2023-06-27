@@ -3,6 +3,7 @@ using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
 using System.Threading;
+using System.IO;
 
 namespace Sandbox.Terminal
 {
@@ -113,10 +114,9 @@ namespace Sandbox.Terminal
                         byte[] buffer = new byte[dataLen];
                         Buffer.BlockCopy(rawBuffer, 0, buffer, 0, buffer.Length);
 
-                        OnNewData?.Invoke(buffer);
+                        //SaveBytes(buffer);
 
-                        //PrintBytes(buffer);
-                        //Console.WriteLine();
+                        OnNewData?.Invoke(buffer);
                     }
                     Quit();
                 }, cts.Token);
@@ -128,20 +128,18 @@ namespace Sandbox.Terminal
             }
         }
 
-        public static void PrintBytes(byte[] byteArray)
+        public static void SaveBytes(byte[] byteArray)
         {
-            var sb = new StringBuilder("new byte[] { ");
-            for (var i = 0; i < byteArray.Length; i++)
+            try
             {
-                var b = byteArray[i];
-                sb.Append(b);
-                if (i < byteArray.Length - 1)
-                {
-                    sb.Append(", ");
-                }
+                Console.WriteLine("Trying to write bytes to: /home/root/output.dat");
+                var data = Convert.ToBase64String(byteArray) + "\n";
+                File.AppendAllText("/home/root/output.dat", data);
             }
-            sb.Append(" }");
-            Console.WriteLine(sb.ToString());
+            catch
+            {
+                Console.WriteLine("Failed to save bytes");
+            }
         }
 
         public void WriteToStdIn(string txt)
