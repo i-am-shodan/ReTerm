@@ -31,7 +31,6 @@
     <None Remove="Resources\segoeui.ttf" />
     <None Remove="Resources\Ubuntu Mono derivative Powerline.ttf" />
     <None Remove="ReTerm.sh" />
-    <None Remove="Ubuntu Mono derivative Powerline.ttf" />
   </ItemGroup>
 
   <ItemGroup>

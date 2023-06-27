@@ -38,7 +38,6 @@ package() {
     local pubdir
     pubdir="$srcdir"/src/ReTerm/bin/Release/net6.0/linux-arm/publish
     install -D -m 755 -t "$pkgdir"/opt/usr/lib/reterm "$pubdir"/ReTerm
-    install -D -m 644 -t "$pkgdir"/opt/usr/lib/reterm "$pubdir/Ubuntu Mono derivative Powerline.ttf"
     install -D -m 755 -T "$pubdir"/ReTerm.sh "$pkgdir"/opt/bin/ReTerm
     sed -i 's|/home/root/ReTerm/ReTerm|/opt/usr/reterm/ReTerm|' "$pkgdir"/opt/bin/ReTerm
     install -D -m 644 -t "$pkgdir"/opt/etc/draft "$srcdir"/draft/reterm.draft
