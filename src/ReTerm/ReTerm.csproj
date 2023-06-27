@@ -28,6 +28,8 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <None Remove="Resources\segoeui.ttf" />
+    <None Remove="Resources\Ubuntu Mono derivative Powerline.ttf" />
     <None Remove="ReTerm.sh" />
     <None Remove="Ubuntu Mono derivative Powerline.ttf" />
   </ItemGroup>
@@ -39,19 +41,32 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Content Include="Ubuntu Mono derivative Powerline.ttf">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-  </ItemGroup>
-
-  <ItemGroup>
-    <ProjectReference Include="..\Graphite\Graphite.csproj" />
     <ProjectReference Include="..\ReMarkable.NET\ReMarkable.NET.csproj" />
     <ProjectReference Include="..\VtNetCore\VtNetCore\VtNetCore.csproj" />
   </ItemGroup>
 
   <ItemGroup>
+    <Resource Include="Resources\segoeui.ttf" />
+    <Resource Include="Resources\Ubuntu Mono derivative Powerline.ttf" />
+  </ItemGroup>
+
+  <ItemGroup>
     <RuntimeHostConfigurationOption Include="System.Globalization.Invariant" Value="true" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Update="Fonts\EmbeddedFonts.Designer.cs">
+      <DependentUpon>EmbeddedFonts.resx</DependentUpon>
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+    </Compile>
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Update="Fonts\EmbeddedFonts.resx">
+      <LastGenOutput>EmbeddedFonts.Designer.cs</LastGenOutput>
+      <Generator>ResXFileCodeGenerator</Generator>
+    </EmbeddedResource>
   </ItemGroup>
 
 </Project>

@@ -3,12 +3,11 @@ using System.Collections.Concurrent;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using Graphite;
-using Graphite.Typography;
 using ReMarkable.NET.Unix.Driver;
 using ReMarkable.NET.Unix.Driver.Display.EinkController;
 using ReMarkable.NET.Unix.Driver.Keyboard;
 using ReMarkable.NET.Util;
+using ReTerm.Fonts;
 using Sandbox.Terminal;
 using SixLabors.Fonts;
 using SixLabors.ImageSharp;
@@ -456,14 +455,6 @@ namespace Sandbox
             {
                 TerminalProcess.WriteToStdIn(key.ToString());
             }
-        }
-
-        public static void WindowUpdate(object sender, WindowUpdateEventArgs e)
-        {
-            _ = Task.Run(() =>
-            {
-                OutputDevices.Display.Draw(e.Buffer, e.UpdatedArea, e.UpdatedArea.Location, displayTemp: DisplayTemp.RemarkableDraw);
-            });      
         }
     }
 }

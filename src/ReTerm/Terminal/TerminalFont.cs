@@ -9,6 +9,7 @@ using SixLabors.ImageSharp.Processing;
 using SixLabors.ImageSharp.Drawing.Processing;
 using System.Collections.Concurrent;
 using System.Reflection;
+using ReTerm.Fonts;
 
 namespace Sandbox.Terminal
 {
@@ -41,7 +42,7 @@ namespace Sandbox.Terminal
 
         public static Font GetFontAndInit(int size)
         {
-            CurrentFont = GetFont().CreateFont(size);
+            CurrentFont = Fonts.UbuntuMonoSpaced.CreateFont(size); //GetFont().CreateFont(size);
 
             GetWidth();
             GetHeight();
@@ -49,18 +50,6 @@ namespace Sandbox.Terminal
             Empty = GetEmptyGlyph();
 
             return CurrentFont;
-        }
-
-        private static FontFamily GetFont()
-        {
-            var fonts = new FontCollection();
-
-            var filePath = Path.Join(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), "Ubuntu Mono derivative Powerline.ttf");
-
-            using var ms = new MemoryStream(File.ReadAllBytes(filePath));
-            fonts.Install(ms);
-
-            return fonts.Find("Ubuntu Mono derivative Powerline");
         }
 
         public static int GetWidth()
