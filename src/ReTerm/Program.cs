@@ -81,6 +81,7 @@ namespace Sandbox
                 TerminalWindow = new TerminalWindow(terminalWidthInChars, terminalHeightInChars, () => cts.Cancel());
                 SetTerminalDefaults(terminalWidthInChars, terminalHeightInChars);
 
+                //await using (TerminalProcess = new ReplayTerminalProcess(() => cts.Cancel()))
                 await using (TerminalProcess = (DeviceType.GetDevice() == Device.Emulator) ? new WindowsTerminalProcess(() => cts.Cancel()) : new LinuxTerminalProcess(() => cts.Cancel()))
                 {
                     ConcurrentDictionary<Tuple<DateTime, int, int>, byte> marks = new();
@@ -133,7 +134,7 @@ namespace Sandbox
 
                         if (alreadyResetting) return;
                         alreadyResetting = true;
-
+              
                         TerminalWindow.Clear();
 
                         if (TerminalController.IsActiveBufferNormal)
@@ -233,10 +234,10 @@ namespace Sandbox
         {
             switch (color)
             {
-                case ETerminalColor.Black: // swap to white
-                    return TerminalFont.White;
-                case ETerminalColor.White: // swap to black
+                case ETerminalColor.Black:
                     return TerminalFont.Black;
+                case ETerminalColor.White:
+                    return TerminalFont.White;
                 case ETerminalColor.Red:
                     return new Rgb24(255, 0, 0);
                 case ETerminalColor.Green:
@@ -315,7 +316,7 @@ namespace Sandbox
                     key = isShiftHeld ? '?' : isOptHeld ? '\\' : '/';
                     break;
                 case KeyboardKey.Equal:
-                    key = isShiftHeld ? '=' : isOptHeld ? '=' : '-';
+                    key = isShiftHeld ? '_' : isOptHeld ? '=' : '-';
                     break;
                 case KeyboardKey.Down:
                     key = '\0';
