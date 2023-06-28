@@ -38,7 +38,7 @@ jobs:
           if [ -d build ];then
             rm -r build
           fi
-          tar -czvf src.tar.gz src draft ReTerm.sln
+          tar -czvf src.tar.gz src draft oxide ReTerm.sln
           toltecmk --verbose -w $(pwd)/build -d $(pwd)/dist
           mkdir -p release
           cp dist/rmall/*.ipk release

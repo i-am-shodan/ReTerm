@@ -1,0 +1,10 @@
+{
+  "bin": "/opt/usr/lib/reterm/ReTerm",
+  "icon": "/opt/etc/draft/icons/reterm.png",
+  "displayName": "ReTerm",
+  "description": "Landscape terminal with support for the type cover",
+  "environment": {
+    "DOTNET_SYSTEM_GLOBALIZATION_INVARIANT": "1",
+    "DOTNET_SYSTEM_GLOBALIZATION_PREDEFINED_CULTURES_ONLY": "false"
+  }
+}
