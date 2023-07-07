@@ -61,7 +61,7 @@ namespace Sandbox
             var c = cursor.ToString();
 
             var img = BaseGlyph.ImageNoRotation.Clone();
-            img.Mutate(x => x.DrawText(c, TerminalFont.CurrentFont, TerminalFont.Black, new Point(0, 0)));
+            img.Mutate(x => x.DrawText(c, TerminalFont.CurrentFont, TerminalFont.Black, new Point(0, 0))); //todo, override settings
             img.Mutate(x => x.Rotate(90));
 
             Image = img;
@@ -192,6 +192,32 @@ namespace Sandbox
                         .SetGraphicsOptions(options => options.Antialias = false)
                         .Clear(Color.White));
                     OutputDevices.Display.Draw(blankScreen, blankScreen.Bounds(), Point.Empty, waveformMode: WaveformMode.Auto);
+                }
+            }
+        }
+
+        public void ForceRefresh()
+        {
+            using (var blankScreen = new Image<Rgb24>(OutputDevices.Display.VisibleWidth, OutputDevices.Display.VisibleHeight))
+            {
+                blankScreen.Mutate(context => context
+                    .SetGraphicsOptions(options => options.Antialias = false)
+                    .Clear(Color.White));
+                OutputDevices.Display.Draw(blankScreen, blankScreen.Bounds(), Point.Empty, waveformMode: WaveformMode.Auto);
+            }
+
+            for (int row = 0; row < CurrentPage.Rows.Count; row++)
+            {
+                for (int col = 0; col < CurrentPage.Rows[row].Length; col++)
+                {
+                    OutputDevices.Display.Draw(
+                        CurrentPage.Rows[row][col].Image,
+                        CurrentPage.Rows[row][col].Image.Bounds(),
+                        LogicalPosToPoint(row, col),
+                        default,
+                        WaveformMode.Du,
+                        DisplayTemp.RemarkableDraw,
+                        UpdateMode.Full);
                 }
             }
         }

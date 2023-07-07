@@ -66,5 +66,15 @@ namespace ReTerm.Settings
         /// The rate at which the cursor switches on and off
         /// </summary>
         public TimeSpan CursorBlinkInterval { get; set; } = TimeSpan.FromMilliseconds(500);
+
+        /// <summary>
+        /// Forces the terminal background color to a specific value
+        /// </summary>
+        public string ForceBackgroundHexColor { get; set; } = "#FFFFFF";
+
+        /// <summary>
+        /// Forces the terminal foreground color to a specific value
+        /// </summary>
+        public string ForceForegroundHexColor { get; set; } = "#000000";
     }
 }

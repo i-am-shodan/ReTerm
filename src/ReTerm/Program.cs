@@ -34,7 +34,7 @@ namespace Sandbox
             var screen = OutputDevices.Display;
             if (InputDevices.Keyboard != null)
             {
-                InputDevices.Keyboard.Released += Keyboard_Released;
+                InputDevices.Keyboard.Pressed += Keyboard_Released;
             }
 
             var buildCacheTask = TerminalFont.BuildGlyphCache();
@@ -170,7 +170,8 @@ namespace Sandbox
                             row, 
                             col, 
                             c.ToString(),
-                            ConvertColor(attrib.ForegroundColor), ConvertColor(attrib.BackgroundColor));
+                            GetColor(settings.ForceForegroundHexColor, attrib.ForegroundColor), 
+                            GetColor(settings.ForceForegroundHexColor, attrib.BackgroundColor));
                     };
 
                     TerminalProcess.OnNewData += (data) => {
@@ -243,6 +244,18 @@ namespace Sandbox
             TerminalController.SetRgbForegroundColor(0, 0, 0);
         }
 
+        private static Rgb24 GetColor(string hexValue, ETerminalColor color)
+        {
+            if (string.IsNullOrWhiteSpace(hexValue))
+            {
+                return ConvertColor(color);
+            }
+            else
+            {
+                return Color.ParseHex(hexValue);
+            }
+        }
+
         private static Rgb24 ConvertColor(ETerminalColor color)
         {
             switch (color)
@@ -268,14 +281,15 @@ namespace Sandbox
             }
         }
 
-        private static void NewDataFromVirtualTerminal(object sender, SendDataEventArgs e)
-        {
-
-        }
-
         private static void Keyboard_Released(object sender, KeyEventArgs e)
         {
             char key = '\0';
+
+            if (e.Key == KeyboardKey.RightAlt)
+            {
+                Console.WriteLine("Forcing screen refresh");
+                TerminalWindow.ForceRefresh();
+            }
 
             if (e.Key == KeyboardKey.LeftCtrl || 
                 e.Key == KeyboardKey.LeftShift || 
@@ -308,7 +322,7 @@ namespace Sandbox
                     key = isShiftHeld ? '\x1b' : '\t';
                     break;
                 case KeyboardKey.CapsLock:
-                    key = '|';
+                    key = isShiftHeld? '\x1b' : '|';
                     break;
                 case KeyboardKey.Grave:
                     key = isShiftHeld ? '"' : '`';
@@ -367,6 +381,10 @@ namespace Sandbox
                     else if (isOptHeld && key == '0')
                     {
                         key = '+';
+                    }
+                    else if (isOptHeld && key == '9')
+                    {
+                        key = '~';
                     }
                     else if (isShiftHeld)
                     {
