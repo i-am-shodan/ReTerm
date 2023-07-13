@@ -33,23 +33,21 @@ namespace Sandbox.Terminal
         public static Rgb24 Black = new Rgb24(0, 0, 0);
         public static Rgb24 White = new Rgb24(255, 255, 255);
 
-        public static Font CurrentFont = GetFontAndInit(36);
+        public static Font CurrentFont;
         public static Glyph Empty;
         private static int width = 0;
         private static int height = 0;
 
         public static readonly ConcurrentDictionary<Rgb24, ConcurrentDictionary<char, Glyph>> glyphLookup = new();
 
-        public static Font GetFontAndInit(int size)
+        public static void Init(int size)
         {
-            CurrentFont = Fonts.UbuntuMonoSpaced.CreateFont(size); //GetFont().CreateFont(size);
+            CurrentFont = FontHelper.Default.CreateFont(size); //GetFont().CreateFont(size);
 
             GetWidth();
             GetHeight();
 
             Empty = GetEmptyGlyph();
-
-            return CurrentFont;
         }
 
         public static int GetWidth()

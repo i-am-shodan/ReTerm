@@ -8,8 +8,10 @@ using System.Linq;
 using SixLabors.ImageSharp.Processing;
 using SixLabors.ImageSharp.Drawing.Processing;
 using System;
+using System.Runtime.CompilerServices;
+using System.Threading.Tasks;
 
-namespace Sandbox
+namespace ReTerm
 {
     internal class WindowGlyph
     {
@@ -171,6 +173,10 @@ namespace Sandbox
                         WaveformMode.Du,
                         DisplayTemp.RemarkableDraw,
                         partialUpdate ? UpdateMode.Partial : UpdateMode.Full);
+
+#if DEBUG
+                    Task.Delay(10).Wait();
+#endif
                 }
             }
         }
