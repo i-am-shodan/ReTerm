@@ -104,6 +104,7 @@ namespace ReTerm.Settings
 
         /// <summary>
         /// This is the table used to translate a keyboard key into a character that is sent to bash
+        /// https://en.wikipedia.org/wiki/ASCII#ASCII_control_code_chart
         /// </summary>
         public Dictionary<KeyboardKey, Dictionary<MetaKey, List<char>>> KeyboardKeyLookup = new()
         {
@@ -280,7 +281,8 @@ namespace ReTerm.Settings
             } },
             { KeyboardKey.R, new Dictionary<MetaKey, List<char>>() {
                 { MetaKey.None, new List<char>() { 'r' } } ,
-                { MetaKey.Shift, new List<char>() { 'R' } }
+                { MetaKey.Shift, new List<char>() { 'R' } },
+                { MetaKey.Ctrl, new List<char>() { '\x12' } } ,
             } },
             { KeyboardKey.S, new Dictionary<MetaKey, List<char>>() {
                 { MetaKey.None, new List<char>() { 's' } } ,
