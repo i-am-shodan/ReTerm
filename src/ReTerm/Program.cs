@@ -196,7 +196,7 @@ namespace ReTerm
                             col, 
                             c.ToString(),
                             GetColor(Settings.ForceForegroundHexColor, attrib.ForegroundColor), 
-                            GetColor(Settings.ForceForegroundHexColor, attrib.BackgroundColor));
+                            GetColor(Settings.ForceBackgroundHexColor, attrib.BackgroundColor));
                     };
 
                     TerminalProcess.OnNewData += (data) => {
