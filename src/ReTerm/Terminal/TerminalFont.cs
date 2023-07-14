@@ -42,7 +42,7 @@ namespace Sandbox.Terminal
 
         public static void Init(int size)
         {
-            CurrentFont = FontHelper.Default.CreateFont(size); //GetFont().CreateFont(size);
+            CurrentFont = FontHelper.Default.CreateFont(size);
 
             GetWidth();
             GetHeight();
