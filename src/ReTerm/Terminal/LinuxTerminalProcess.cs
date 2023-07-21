@@ -102,7 +102,7 @@ namespace Sandbox.Terminal
                     // Read from the child process's stdout
                     while (!cts.IsCancellationRequested)
                     {
-                        byte[] rawBuffer = new byte[64];
+                        byte[] rawBuffer = new byte[150];
                         int dataLen = read(masterFileDescription, rawBuffer, rawBuffer.Length);
 
                         if (dataLen <= 0)

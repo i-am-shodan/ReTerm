@@ -41,7 +41,7 @@ namespace ReTerm
             string splashMessage = ReTerm;
             try
             {
-                Settings = Get();
+                Settings = await Get();
                 Fonts.FontHelper.Init(Settings.FontPath, Settings.FontName);
                 TerminalFont.Init(Settings.FontSize);
                 InputDevices.Keyboard.Pressed += Keyboard_Released;

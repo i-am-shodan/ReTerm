@@ -46,7 +46,7 @@
                 "panel": "new"
             },
             "windows": {
-                "command": "\"Write-Output 'put -r ./src/ReTerm/bin/Debug/net6.0/linux-arm/ /home/root/ReTerm' | sftp root@172.16.1.189\""
+                "command": "\"Write-Output 'put -r ./src/ReTerm/bin/Debug/net6.0/linux-arm/ /home/root/ReTerm' | sftp root@10.11.99.1\""
             },
             "problemMatcher": []
         }

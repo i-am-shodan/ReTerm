@@ -1,8 +1,10 @@
 ﻿using Newtonsoft.Json;
 using ReMarkable.NET.Unix.Driver.Keyboard;
+using ReMarkable.NET.Util;
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Threading.Tasks;
 
 namespace ReTerm.Settings
 {
@@ -18,20 +20,22 @@ namespace ReTerm.Settings
             Ctrl
         }
 
-        public static TerminalSettings Get() {
+        public static async Task<TerminalSettings> Get() {
             Console.WriteLine("Loading settings file from: " + SettingsFileLocation);
+
+            TerminalSettings settings;
 
             // try and load
             if (File.Exists(SettingsFileLocation))
             {
                 Console.WriteLine("Loading settings");
                 var json = File.ReadAllText(SettingsFileLocation);
-                return JsonConvert.DeserializeObject<TerminalSettings>(json);
+                settings = JsonConvert.DeserializeObject<TerminalSettings>(json);
             }
             else
             {
                 Console.WriteLine("Settings not found, creating");
-                var settings = new TerminalSettings();
+                settings = new TerminalSettings();
                 
                 var settingdStr = JsonConvert.SerializeObject(settings, Formatting.Indented);
                 try
@@ -52,9 +56,34 @@ namespace ReTerm.Settings
                 {
                     Console.WriteLine("Could not write settings file: "+ex.Message);
                 }
-
-                return settings;
             }
+
+            if (settings.KeyboardKeyLookup == null || settings.KeyboardKeyLookup.Count == 0)
+            {
+                var lang = string.Empty;
+                if (DeviceType.GetDevice() != Device.Emulator)
+                {
+                    lang = await File.ReadAllTextAsync("/sys/pogo/status/lang");
+                }
+
+                switch (lang.Trim())
+                {
+                    case "UK":
+                        Console.WriteLine("Detected language UK");
+                        settings.KeyboardKeyLookup = DefaultKeyboardLayouts.UK;
+                        break;
+                    case "US":
+                        Console.WriteLine("Detected language US");
+                        settings.KeyboardKeyLookup = DefaultKeyboardLayouts.US;
+                        break;
+                    default:
+                        Console.WriteLine("Unknown lang: "+lang + " using UK");
+                        settings.KeyboardKeyLookup = DefaultKeyboardLayouts.UK;
+                        break;
+                }
+            }
+
+            return settings;
         }
 
         /// <summary>
@@ -106,220 +135,6 @@ namespace ReTerm.Settings
         /// This is the table used to translate a keyboard key into a character that is sent to bash
         /// https://en.wikipedia.org/wiki/ASCII#ASCII_control_code_chart
         /// </summary>
-        public Dictionary<KeyboardKey, Dictionary<MetaKey, List<char>>> KeyboardKeyLookup = new()
-        {
-            { KeyboardKey.Enter, new Dictionary<MetaKey, List<char>>() {{ MetaKey.None, new List<char>() { '\n' } } } },
-            { KeyboardKey.Backspace, new Dictionary<MetaKey, List<char>>() {{ MetaKey.None, new List<char>() { '\b' } } } },
-            { KeyboardKey.Space, new Dictionary<MetaKey, List<char>>() {{ MetaKey.None, new List<char>() { ' ' } } } },
-
-            { KeyboardKey.Tab, new Dictionary<MetaKey, List<char>>() {
-                { MetaKey.None, new List<char>() { '\t'} },
-                { MetaKey.Shift, new List<char>() { '\x1b' } }
-            } },
-            { KeyboardKey.CapsLock, new Dictionary<MetaKey, List<char>>() {
-                { MetaKey.None, new List<char>() { '|' } },
-                { MetaKey.Shift, new List<char>() { '\x1b' } }
-            } },
-            { KeyboardKey.Grave, new Dictionary<MetaKey, List<char>>() {
-                { MetaKey.None, new List<char>() { '`' } } ,
-                { MetaKey.Shift, new List<char>() { '"' } }
-            } },
-            { KeyboardKey.Semicolon, new Dictionary<MetaKey, List<char>>() {
-                { MetaKey.None, new List<char>() { ':' } },
-                { MetaKey.Shift, new List<char>() { ';' } }
-            } },
-            { KeyboardKey.Apostrophe, new Dictionary<MetaKey, List<char>>() {
-                { MetaKey.None, new List<char>() { '\'' } },
-                { MetaKey.Shift, new List<char>() { '@' } }
-            } },
-            { KeyboardKey.Comma, new Dictionary<MetaKey, List<char>>() {
-                { MetaKey.None, new List<char>() { ',' } },
-                { MetaKey.Shift, new List<char>() { '<' } }
-            } },
-            { KeyboardKey.Period, new Dictionary<MetaKey, List<char>>() {
-                { MetaKey.None, new List<char>() { '.' } },
-                { MetaKey.Shift, new List<char>() { '>' } }
-            } },
-            { KeyboardKey.Slash, new Dictionary<MetaKey, List<char>>() {
-                { MetaKey.None, new List<char>() { '/' } } ,
-                { MetaKey.Shift, new List<char>() { '?' } },
-                { MetaKey.Opt, new List<char>() { '\\' } },
-                { MetaKey.Ctrl, new List<char>() { '\x1c' } } ,
-            } },
-            { KeyboardKey.Equal, new Dictionary<MetaKey, List<char>>() {
-                { MetaKey.None, new List<char>() { '-' } } ,
-                { MetaKey.Shift, new List<char>() { '_' } },
-                { MetaKey.Opt, new List<char>() { '=' } }
-            } },
-            { KeyboardKey.Down, new Dictionary<MetaKey, List<char>>() {
-                { MetaKey.None, new List<char>() { '\x1B', '\x5B', '\x42' } }
-            } },
-            { KeyboardKey.Up, new Dictionary<MetaKey, List<char>>() {
-                { MetaKey.None, new List<char>() { '\x1B', '\x5B', '\x41' } }
-            } },
-            { KeyboardKey.Left, new Dictionary<MetaKey, List<char>>() {
-                { MetaKey.None, new List<char>() { '\x1B', '\x5B', '\x44' } }
-            } },
-            { KeyboardKey.Right, new Dictionary<MetaKey, List<char>>() {
-                { MetaKey.None, new List<char>() { '\x1B', '\x5B', '\x43' } }
-            } },
-            { KeyboardKey.NumberRow1, new Dictionary<MetaKey, List<char>>() {
-                { MetaKey.None, new List<char>() { '1' } } ,
-                { MetaKey.Shift, new List<char>() { '!' } }
-            } },
-            { KeyboardKey.NumberRow2, new Dictionary<MetaKey, List<char>>() {
-                { MetaKey.None, new List<char>() { '2' } } ,
-                { MetaKey.Shift, new List<char>() { '"' } }
-            } },
-            { KeyboardKey.NumberRow3, new Dictionary<MetaKey, List<char>>() {
-                { MetaKey.None, new List<char>() { '3' } } ,
-                { MetaKey.Shift, new List<char>() { '£' } },
-                { MetaKey.Opt, new List<char>() { '#' } }
-            } },
-            { KeyboardKey.NumberRow4, new Dictionary<MetaKey, List<char>>() {
-                { MetaKey.None, new List<char>() { '4' } } ,
-                { MetaKey.Shift, new List<char>() { '$' } }
-            } },
-            { KeyboardKey.NumberRow5, new Dictionary<MetaKey, List<char>>() {
-                { MetaKey.None, new List<char>() { '5' } } ,
-                { MetaKey.Shift, new List<char>() { '%' } }
-            } },
-            { KeyboardKey.NumberRow6, new Dictionary<MetaKey, List<char>>() {
-                { MetaKey.None, new List<char>() { '6' } } ,
-                { MetaKey.Shift, new List<char>() { '^' } }
-            } },
-            { KeyboardKey.NumberRow7, new Dictionary<MetaKey, List<char>>() {
-                { MetaKey.None, new List<char>() { '7' } } ,
-                { MetaKey.Shift, new List<char>() { '&' } }
-            } },
-            { KeyboardKey.NumberRow8, new Dictionary<MetaKey, List<char>>() {
-                { MetaKey.None, new List<char>() { '8' } } ,
-                { MetaKey.Shift, new List<char>() { '*' } }
-            } },
-            { KeyboardKey.NumberRow9, new Dictionary<MetaKey, List<char>>() {
-                { MetaKey.None, new List<char>() { '9' } } ,
-                { MetaKey.Shift, new List<char>() { '(' } },
-                { MetaKey.Opt, new List<char>() { '~' } },
-            } },
-            { KeyboardKey.NumberRow0, new Dictionary<MetaKey, List<char>>() {
-                { MetaKey.None, new List<char>() { '0' } } ,
-                { MetaKey.Shift, new List<char>() { ')' } },
-                { MetaKey.Opt, new List<char>() { '+' } }
-            } },
-            { KeyboardKey.A, new Dictionary<MetaKey, List<char>>() {
-                { MetaKey.None, new List<char>() { 'a' } } ,
-                { MetaKey.Shift, new List<char>() { 'A' } }
-            } },
-            { KeyboardKey.B, new Dictionary<MetaKey, List<char>>() {
-                { MetaKey.None, new List<char>() { 'b' } } ,
-                { MetaKey.Shift, new List<char>() { 'B' } }
-            } },
-            { KeyboardKey.C, new Dictionary<MetaKey, List<char>>() {
-                { MetaKey.None, new List<char>() { 'c' } } ,
-                { MetaKey.Shift, new List<char>() { 'C' } } ,
-                { MetaKey.Ctrl, new List<char>() { '\x03' } }
-            } },
-            { KeyboardKey.D, new Dictionary<MetaKey, List<char>>() {
-                { MetaKey.None, new List<char>() { 'd' } } ,
-                { MetaKey.Shift, new List<char>() { 'D' } }
-            } },
-            { KeyboardKey.E, new Dictionary<MetaKey, List<char>>() {
-                { MetaKey.None, new List<char>() { 'e' } } ,
-                { MetaKey.Shift, new List<char>() { 'E' } }
-            } },
-            { KeyboardKey.F, new Dictionary<MetaKey, List<char>>() {
-                { MetaKey.None, new List<char>() { 'f' } } ,
-                { MetaKey.Shift, new List<char>() { 'F' } }
-            } },
-            { KeyboardKey.G, new Dictionary<MetaKey, List<char>>() {
-                { MetaKey.None, new List<char>() { 'g' } } ,
-                { MetaKey.Shift, new List<char>() { 'G' } },
-                { MetaKey.Ctrl, new List<char>() { '\x07' } } ,
-            } },
-            { KeyboardKey.H, new Dictionary<MetaKey, List<char>>() {
-                { MetaKey.None, new List<char>() { 'h' } } ,
-                { MetaKey.Shift, new List<char>() { 'H' } }
-            } },
-            { KeyboardKey.I, new Dictionary<MetaKey, List<char>>() {
-                { MetaKey.None, new List<char>() { 'i' } } ,
-                { MetaKey.Shift, new List<char>() { 'I' } }
-            } },
-            { KeyboardKey.J, new Dictionary<MetaKey, List<char>>() {
-                { MetaKey.None, new List<char>() { 'j' } } ,
-                { MetaKey.Shift, new List<char>() { 'J' } } ,
-                { MetaKey.Ctrl, new List<char>() { '\x0a' } } ,
-            } },
-            { KeyboardKey.K, new Dictionary<MetaKey, List<char>>() {
-                { MetaKey.None, new List<char>() { 'k' } } ,
-                { MetaKey.Shift, new List<char>() { 'K' } } ,
-                { MetaKey.Ctrl, new List<char>() { '\x0b' } } ,
-            } },
-            { KeyboardKey.L, new Dictionary<MetaKey, List<char>>() {
-                { MetaKey.None, new List<char>() { 'l' } } ,
-                { MetaKey.Shift, new List<char>() { 'L' } }
-            } },
-            { KeyboardKey.M, new Dictionary<MetaKey, List<char>>() {
-                { MetaKey.None, new List<char>() { 'm' } } ,
-                { MetaKey.Shift, new List<char>() { 'M' } }
-            } },
-            { KeyboardKey.N, new Dictionary<MetaKey, List<char>>() {
-                { MetaKey.None, new List<char>() { 'n' } } ,
-                { MetaKey.Shift, new List<char>() { 'N' } }
-            } },
-            { KeyboardKey.O, new Dictionary<MetaKey, List<char>>() {
-                { MetaKey.None, new List<char>() { 'o' } } ,
-                { MetaKey.Shift, new List<char>() { 'O' } } ,
-                { MetaKey.Ctrl, new List<char>() { '\x0f' } } ,
-            } },
-            { KeyboardKey.P, new Dictionary<MetaKey, List<char>>() {
-                { MetaKey.None, new List<char>() { 'p' } } ,
-                { MetaKey.Shift, new List<char>() { 'P' } }
-            } },
-            { KeyboardKey.Q, new Dictionary<MetaKey, List<char>>() {
-                { MetaKey.None, new List<char>() { 'q' } } ,
-                { MetaKey.Shift, new List<char>() { 'Q' } }
-            } },
-            { KeyboardKey.R, new Dictionary<MetaKey, List<char>>() {
-                { MetaKey.None, new List<char>() { 'r' } } ,
-                { MetaKey.Shift, new List<char>() { 'R' } },
-                { MetaKey.Ctrl, new List<char>() { '\x12' } } ,
-            } },
-            { KeyboardKey.S, new Dictionary<MetaKey, List<char>>() {
-                { MetaKey.None, new List<char>() { 's' } } ,
-                { MetaKey.Shift, new List<char>() { 'S' } }
-            } },
-            { KeyboardKey.T, new Dictionary<MetaKey, List<char>>() {
-                { MetaKey.None, new List<char>() { 't' } } ,
-                { MetaKey.Shift, new List<char>() { 'T' } } ,
-                { MetaKey.Ctrl, new List<char>() { '\x14' } } ,
-            } },
-            { KeyboardKey.U, new Dictionary<MetaKey, List<char>>() {
-                { MetaKey.None, new List<char>() { 'u' } } ,
-                { MetaKey.Shift, new List<char>() { 'U' } } ,
-                { MetaKey.Ctrl, new List<char>() { '\x15' } } ,
-            } },
-            { KeyboardKey.V, new Dictionary<MetaKey, List<char>>() {
-                { MetaKey.None, new List<char>() { 'v' } } ,
-                { MetaKey.Shift, new List<char>() { 'V' } }
-            } },
-            { KeyboardKey.W, new Dictionary<MetaKey, List<char>>() {
-                { MetaKey.None, new List<char>() { 'w' } } ,
-                { MetaKey.Shift, new List<char>() { 'W' } } ,
-                { MetaKey.Ctrl, new List<char>() { '\x17' } } ,
-            } },
-            { KeyboardKey.X, new Dictionary<MetaKey, List<char>>() {
-                { MetaKey.None, new List<char>() { 'x' } } ,
-                { MetaKey.Shift, new List<char>() { 'X' } } ,
-                { MetaKey.Ctrl, new List<char>() { '\x18' } } ,
-            } },
-            { KeyboardKey.Y, new Dictionary<MetaKey, List<char>>() {
-                { MetaKey.None, new List<char>() { 'y' } } ,
-                { MetaKey.Shift, new List<char>() { 'Y' } }
-            } },
-            { KeyboardKey.Z, new Dictionary<MetaKey, List<char>>() {
-                { MetaKey.None, new List<char>() { 'z' } } ,
-                { MetaKey.Shift, new List<char>() { 'Z' } }
-            } },
-        };
+        public Dictionary<KeyboardKey, Dictionary<MetaKey, List<char>>> KeyboardKeyLookup { get; set; } = null;
     }
 }

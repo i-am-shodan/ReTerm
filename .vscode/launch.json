@@ -16,6 +16,17 @@
             "stopAtEntry": false
         },
         {
+            "name": "Debug",
+            "type": "coreclr",
+            "request": "launch",
+            "preLaunchTask": "build",
+            "program": "${workspaceFolder}/src/ReTerm/bin/Debug/net6.0/ReTerm.dll",
+            "args": [],
+            "cwd": "${workspaceFolder}/src/ReTerm/bin/Debug/net6.0",
+            "console": "internalConsole",
+            "stopAtEntry": false
+        },
+        {
             "name": "Debug on Rm2 (remote)",
             "type": "coreclr",
             "request": "launch",
@@ -32,7 +43,7 @@
                 "pipeCwd": "${workspaceFolder}",
                 "pipeProgram": "ssh",
                 "pipeArgs": [
-                    "root@172.16.1.189"
+                    "root@10.11.99.1"
                 ],
                 "debuggerPath": "/home/root/vsdbg/vsdbg.sh",
             }
