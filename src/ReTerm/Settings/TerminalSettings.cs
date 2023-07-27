@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
+using System.Xml.Linq;
 
 namespace ReTerm.Settings
 {
@@ -36,30 +37,13 @@ namespace ReTerm.Settings
             {
                 Console.WriteLine("Settings not found, creating");
                 settings = new TerminalSettings();
-                
-                var settingdStr = JsonConvert.SerializeObject(settings, Formatting.Indented);
-                try
-                {
-                    Directory.CreateDirectory(Path.GetDirectoryName(SettingsFileLocation));
-                    Console.WriteLine("Created settings dir");
-                }
-                catch (Exception ex)
-                {
-                    Console.WriteLine("Could not create settings dir: "+ex.Message);
-                }
 
-                try
-                {
-                    File.WriteAllText(SettingsFileLocation, settingdStr);
-                }
-                catch (Exception ex)
-                {
-                    Console.WriteLine("Could not write settings file: "+ex.Message);
-                }
+                Save(settings);
             }
-
             if (settings.KeyboardKeyLookup == null || settings.KeyboardKeyLookup.Count == 0)
             {
+                bool layoutWasEmpty = settings.KeyboardKeyLookup == null;
+
                 var lang = string.Empty;
                 if (DeviceType.GetDevice() != Device.Emulator)
                 {
@@ -81,9 +65,37 @@ namespace ReTerm.Settings
                         settings.KeyboardKeyLookup = DefaultKeyboardLayouts.UK;
                         break;
                 }
+
+                if (layoutWasEmpty)
+                {
+                    Save(settings);
+                }
             }
 
             return settings;
+        }
+
+        private static void Save(TerminalSettings settings)
+        {
+            var settingdStr = JsonConvert.SerializeObject(settings, Formatting.Indented);
+            try
+            {
+                Directory.CreateDirectory(Path.GetDirectoryName(SettingsFileLocation));
+                Console.WriteLine("Created settings dir");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Could not create settings dir: " + ex.Message);
+            }
+
+            try
+            {
+                File.WriteAllText(SettingsFileLocation, settingdStr);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Could not write settings file: " + ex.Message);
+            }
         }
 
         /// <summary>
