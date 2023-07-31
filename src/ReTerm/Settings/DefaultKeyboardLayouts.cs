@@ -64,8 +64,8 @@ namespace ReTerm.Settings
                 { MetaKey.Shift, new List<char>() { '"' } }
             } },
             { KeyboardKey.Semicolon, new Dictionary<MetaKey, List<char>>() {
-                { MetaKey.None, new List<char>() { ':' } },
-                { MetaKey.Shift, new List<char>() { ';' } }
+                { MetaKey.None, new List<char>() { ';' } },
+                { MetaKey.Shift, new List<char>() { ':' } }
             } },
             { KeyboardKey.Apostrophe, new Dictionary<MetaKey, List<char>>() {
                 { MetaKey.None, new List<char>() { '\'' } },

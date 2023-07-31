@@ -109,7 +109,7 @@ namespace ReTerm
                 SetTerminalDefaults(terminalWidthInChars, terminalHeightInChars);
 
                 //await using (TerminalProcess = new ReplayTerminalProcess(() => cts.Cancel()))
-                await using (TerminalProcess = (DeviceType.GetDevice() == Device.Emulator) ? new WindowsTerminalProcess(() => cts.Cancel()) : new LinuxTerminalProcess(() => cts.Cancel()))
+                await using (TerminalProcess = (DeviceType.GetDevice() == Device.Emulator) ? new WindowsTerminalProcess(() => cts.Cancel()) : new LinuxTerminalProcess(() => cts.Cancel(), terminalHeightInChars, terminalWidthInChars))
                 {
                     ConcurrentDictionary<Tuple<DateTime, int, int>, byte> marks = new();
 

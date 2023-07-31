@@ -85,7 +85,10 @@ namespace Sandbox.Terminal
             if (pid == 0)
             {
                 // Child process
-                setenv("TERM", "linux", 1);
+
+                // The terminal variable sets all kind of behaviours. After a lot of testing
+                // setting it to this seems the most compatible with the vt100 library we are using
+                setenv("TERM", "xterm-256color", 1);
 
                 string home = Marshal.PtrToStringAnsi(getenv("HOME"));
                 if (string.IsNullOrWhiteSpace(home))
