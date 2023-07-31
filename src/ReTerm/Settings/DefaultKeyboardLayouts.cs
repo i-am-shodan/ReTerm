@@ -48,7 +48,7 @@ namespace ReTerm.Settings
         public static Dictionary<KeyboardKey, Dictionary<MetaKey, List<char>>> UK = new()
         {
             { KeyboardKey.Enter, new Dictionary<MetaKey, List<char>>() {{ MetaKey.None, new List<char>() { '\n' } } } },
-            { KeyboardKey.Backspace, new Dictionary<MetaKey, List<char>>() {{ MetaKey.None, new List<char>() { '\b' } } } },
+            { KeyboardKey.Backspace, new Dictionary<MetaKey, List<char>>() {{ MetaKey.None, new List<char>() { '\b', '\x0' } } } },
             { KeyboardKey.Space, new Dictionary<MetaKey, List<char>>() {{ MetaKey.None, new List<char>() { ' ' } } } },
 
             { KeyboardKey.Tab, new Dictionary<MetaKey, List<char>>() {
@@ -73,11 +73,13 @@ namespace ReTerm.Settings
             } },
             { KeyboardKey.Comma, new Dictionary<MetaKey, List<char>>() {
                 { MetaKey.None, new List<char>() { ',' } },
-                { MetaKey.Shift, new List<char>() { '<' } }
+                { MetaKey.Shift, new List<char>() { '<' } },
+                { MetaKey.Opt, new List<char>() { '{',  } },
             } },
             { KeyboardKey.Period, new Dictionary<MetaKey, List<char>>() {
                 { MetaKey.None, new List<char>() { '.' } },
-                { MetaKey.Shift, new List<char>() { '>' } }
+                { MetaKey.Shift, new List<char>() { '>' } },
+                { MetaKey.Opt, new List<char>() { '}',  } },
             } },
             { KeyboardKey.Slash, new Dictionary<MetaKey, List<char>>() {
                 { MetaKey.None, new List<char>() { '/' } } ,
@@ -275,7 +277,7 @@ namespace ReTerm.Settings
             } },
 
             { KeyboardKey.Backspace, new Dictionary<MetaKey, List<char>>() {
-                { MetaKey.None, new List<char>() { '\b' } },
+                { MetaKey.None, new List<char>() { '\b', '\x0' } },
             } },
 
             { KeyboardKey.Space, new Dictionary<MetaKey, List<char>>() {
@@ -310,11 +312,13 @@ namespace ReTerm.Settings
             { KeyboardKey.Comma, new Dictionary<MetaKey, List<char>>() {
                 { MetaKey.None, new List<char>() { ',',  } },
                 { MetaKey.Shift, new List<char>() { '<',  } },
+                { MetaKey.Opt, new List<char>() { '{',  } },
             } },
 
             { KeyboardKey.Period, new Dictionary<MetaKey, List<char>>() {
                 { MetaKey.None, new List<char>() { '.',  } },
                 { MetaKey.Shift, new List<char>() { '>',  } },
+                { MetaKey.Opt, new List<char>() { '}',  } },
             } },
 
             { KeyboardKey.Slash, new Dictionary<MetaKey, List<char>>() {
