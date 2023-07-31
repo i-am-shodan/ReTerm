@@ -1,9 +1,9 @@
 ﻿using System;
+using System.IO;
 using System.Runtime.InteropServices;
 using System.Text;
-using System.Threading.Tasks;
 using System.Threading;
-using System.IO;
+using System.Threading.Tasks;
 
 namespace Sandbox.Terminal
 {
@@ -30,7 +30,7 @@ namespace Sandbox.Terminal
         private static extern int errno();
 
         [DllImport("libutil.so.1", SetLastError = true)]
-        internal static extern int forkpty(ref int master, StringBuilder? name, IntPtr termp, IntPtr winsize);
+        internal static extern int forkpty(ref int master, StringBuilder? name, IntPtr termp, ref WinSize winsize);
 
         [DllImport("libc.so.6", SetLastError = true)]
         private static extern int execvp(
@@ -57,20 +57,35 @@ namespace Sandbox.Terminal
         const int O_NONBLOCK = 00004000;
         const int SIGINT = 2;
 
+        [StructLayout(LayoutKind.Sequential)]
+        public struct WinSize
+        {
+            public ushort ws_row;
+            public ushort ws_col;
+            public ushort ws_xpixel;
+            public ushort ws_ypixel;
+        }
+
         public event Action<byte[]> OnNewData;
         #endregion
 
-        public LinuxTerminalProcess(Action quit)
+        public LinuxTerminalProcess(Action quit, int rows, int cols)
         {
             Quit = quit;
 
+            WinSize winSize = new WinSize()
+            {
+                ws_row = (ushort)rows,
+                ws_col = (ushort)cols
+            };
+
             // Create a new process
-            pid = forkpty(ref masterFileDescription, null, IntPtr.Zero, IntPtr.Zero);
+            pid = forkpty(ref masterFileDescription, null, IntPtr.Zero, ref winSize);
 
             if (pid == 0)
             {
                 // Child process
-                setenv("TERM", "xterm", 1);
+                setenv("TERM", "linux", 1);
 
                 string home = Marshal.PtrToStringAnsi(getenv("HOME"));
                 if (string.IsNullOrWhiteSpace(home))
@@ -83,7 +98,7 @@ namespace Sandbox.Terminal
                     chdir(home);
                 }
 
-                if (execvp("/bin/bash", new string[] { "/bin/bash", null, "--login" }) == -1)
+                if (execvp("/bin/bash", new string[] { "/bin/bash", null }) == -1)
                 {
                     throw new Exception("Error executing bash: " + errno());
                 }
