@@ -1,4 +1,5 @@
-﻿using System.IO;
+﻿using System;
+using System.IO;
 using System.Linq;
 using SixLabors.Fonts;
 
@@ -6,17 +7,23 @@ namespace ReTerm.Fonts
 {
     public class FontHelper
     {
-        public static FontFamily SegoeUi;
+        public static readonly FontFamily SegoeUi;
         public static FontFamily Default;
+
+        static FontHelper()
+        {
+            var fonts = new FontCollection();
+
+            InstallFont(fonts, EmbeddedFonts.segoeui); // Segoe UI
+            SegoeUi = fonts.Find("Segoe UI");
+            Default = SegoeUi;
+        }
 
         public static void Init(string defaultFontOverride = "", string defaultFontOverrideName = "")
         {
             var fonts = new FontCollection();
 
-            InstallFont(fonts, EmbeddedFonts.segoeui); // Segoe UI
             InstallFont(fonts, EmbeddedFonts.Ubuntu_Mono_derivative_Powerline); // Segoe UI
-
-            SegoeUi = fonts.Find("Segoe UI");
 
             if (string.IsNullOrWhiteSpace(defaultFontOverride))
             {

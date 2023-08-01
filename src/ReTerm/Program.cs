@@ -6,9 +6,11 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using ReMarkable.NET.Unix.Driver;
+using ReMarkable.NET.Unix.Driver.Display;
 using ReMarkable.NET.Unix.Driver.Display.EinkController;
 using ReMarkable.NET.Unix.Driver.Keyboard;
 using ReMarkable.NET.Util;
+using ReTerm.Fonts;
 using ReTerm.Settings;
 using Sandbox.Terminal;
 using SixLabors.Fonts;
@@ -53,47 +55,14 @@ namespace ReTerm
                             InputDevices.Keyboard == null ? "No keyboard attached" : "Could not use fonts";
 
                 splashMessage += "\nError - " + errorLocation + "\n" + ex.GetType().Name + "\n " + ex.Message;
+
+                DisplaySplashScreen(screen, splashMessage);
+                return;
             }
 
             var buildCacheTask = TerminalFont.BuildGlyphCache();
 
-            var splashFont = Fonts.FontHelper.SegoeUi.CreateFont(72);
-            var strSize = TextMeasurer.Measure(splashMessage, new RendererOptions(splashFont));
-
-            using (var blankScreen = new Image<Rgb24>(screen.VisibleWidth, screen.VisibleHeight))
-            using (var splashImg = new Image<Rgb24>((int)strSize.Width + 20, (int)strSize.Height + 20))
-            {
-                blankScreen.Mutate(context => context
-                    .SetGraphicsOptions(options => options.Antialias = false)
-                    .Clear(Color.White));
-
-                splashImg.Mutate(context => context
-                    .SetGraphicsOptions(options => options.Antialias = false)
-                    .Clear(Color.White));
-
-                splashImg.Mutate(g => g.DrawText(splashMessage, Fonts.FontHelper.SegoeUi.CreateFont(72), Color.Black, new PointF(0, 0)));
-                splashImg.Mutate(x => x.Rotate(90));
-
-                var landscapeScreenWidth = screen.VisibleHeight;
-                var landscapeScreenHeight = screen.VisibleWidth;
-
-                var splashWidth = splashImg.Height;
-                var splashHeight = splashImg.Width;
-
-                var splashX = (landscapeScreenWidth / 2) - (splashWidth / 2);
-                var splashY = (landscapeScreenHeight / 2) - (splashHeight / 2);
-
-                blankScreen.Mutate(x => x.DrawImage(splashImg, new Point(splashY, splashX), 1));
-
-                OutputDevices.Display.Draw(blankScreen, blankScreen.Bounds(), Point.Empty, waveformMode: WaveformMode.Auto);
-            }
-
-            if (splashMessage != ReTerm)
-            {
-                // to get here we added some messages to the splash messages
-                // we should stop here as we can't proceed
-                return;
-            }
+            DisplaySplashScreen(screen, splashMessage);
 
             // calculate the width of the terminal in chars based on the size of the font
             var terminalWidthInChars = (int)Math.Floor(screen.VisibleHeight / (double)TerminalFont.GetWidth());
@@ -253,6 +222,41 @@ namespace ReTerm
 
                     await Task.Delay(-1, cts.Token);
                 }
+            }
+        }
+
+        private static void DisplaySplashScreen(IDisplayDriver screen, string txt)
+        {
+            var splashFont = Fonts.FontHelper.SegoeUi.CreateFont(72);
+
+            var strSize = TextMeasurer.Measure(txt, new RendererOptions(splashFont));
+
+            using (var blankScreen = new Image<Rgb24>(screen.VisibleWidth, screen.VisibleHeight))
+            using (var splashImg = new Image<Rgb24>((int)strSize.Width + 20, (int)strSize.Height + 20))
+            {
+                blankScreen.Mutate(context => context
+                    .SetGraphicsOptions(options => options.Antialias = false)
+                    .Clear(Color.White));
+
+                splashImg.Mutate(context => context
+                    .SetGraphicsOptions(options => options.Antialias = false)
+                    .Clear(Color.White));
+
+                splashImg.Mutate(g => g.DrawText(txt, Fonts.FontHelper.SegoeUi.CreateFont(72), Color.Black, new PointF(0, 0)));
+                splashImg.Mutate(x => x.Rotate(90));
+
+                var landscapeScreenWidth = screen.VisibleHeight;
+                var landscapeScreenHeight = screen.VisibleWidth;
+
+                var splashWidth = splashImg.Height;
+                var splashHeight = splashImg.Width;
+
+                var splashX = (landscapeScreenWidth / 2) - (splashWidth / 2);
+                var splashY = (landscapeScreenHeight / 2) - (splashHeight / 2);
+
+                blankScreen.Mutate(x => x.DrawImage(splashImg, new Point(splashY, splashX), 1));
+
+                OutputDevices.Display.Draw(blankScreen, blankScreen.Bounds(), Point.Empty, waveformMode: WaveformMode.Auto);
             }
         }
 
