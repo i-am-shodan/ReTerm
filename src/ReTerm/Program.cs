@@ -42,39 +42,17 @@ namespace ReTerm
             try
             {
                 Settings = await Get();
-            }
-            catch (Exception ex)
-            {
-                splashMessage += "\nError - Could not load settings\n" + ex.GetType().Name + "\n " + ex.Message;
-            }
-            try
-            {
                 Fonts.FontHelper.Init(Settings.FontPath, Settings.FontName);
-            }
-            catch (Exception ex)
-            {
-                splashMessage += "\nError - Could not load fonts\n" + ex.GetType().Name + "\n " + ex.Message;
-            }
-            try
-            {
                 TerminalFont.Init(Settings.FontSize);
-            }
-            catch (Exception ex)
-            {
-                splashMessage += "\nError - Could not use fonts\n" + ex.GetType().Name + "\n " + ex.Message;
-            }
-            try
-            {
                 InputDevices.Keyboard.Pressed += Keyboard_Released;
             }
-            catch (Exception ex)
-            {
-                splashMessage += "\nError - No keyboard attached\n" + ex.GetType().Name + "\n " + ex.Message;
-            }
-            if (Fonts.FontHelper.SegoeUi == default)
-            {
-                Console.Write(splashMessage);
-                throw new Exception("Failed to load any fonts, including built-in fonts");
+            catch (Exception ex) {
+
+                var errorLocation = Settings == null ? "Could not load settings" :
+                            Fonts.FontHelper.Default == null ? "Could not load fonts" :
+                            InputDevices.Keyboard == null ? "No keyboard attached" : "Could not use fonts";
+
+                splashMessage += "\nError - " + errorLocation + "\n" + ex.GetType().Name + "\n " + ex.Message;
             }
 
             var buildCacheTask = TerminalFont.BuildGlyphCache();
