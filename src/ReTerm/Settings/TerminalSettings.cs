@@ -45,7 +45,7 @@ namespace ReTerm.Settings
                 bool layoutWasEmpty = settings.KeyboardKeyLookup == null;
 
                 var lang = string.Empty;
-                if (DeviceType.GetDevice() != Device.Emulator)
+                if (DeviceType.GetDevice() != Device.Emulator && File.Exists("/sys/pogo/status/lang"))
                 {
                     lang = await File.ReadAllTextAsync("/sys/pogo/status/lang");
                 }
